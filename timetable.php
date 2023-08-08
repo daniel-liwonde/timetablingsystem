@@ -49,7 +49,7 @@ $sem = checksem();
                             &nbsp;<a id="tGen" class="btn btn-outline rounded" href="#"><i class="fas fa-gear mod"></i>
                                 &nbsp; Generate time table</a>
                             &nbsp; &nbsp;<a class="btn btn-outline rounded" href="ttEport.php"><i
-                                    class="fas fa-file-export mod"></i> &nbsp;Export to exel
+                                    class="fas fa-file-export mod"></i> &nbsp;Export to Exel File
                             </a>&nbsp; &nbsp;
 
                             <a id="clearData" class="btn btn-outline rounded"
