@@ -40,7 +40,8 @@ $sem = checksem();
 
                             <div class="alert alert-info">
                                 <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                <strong><i class="icon-calendar icon-large"></i>&nbsp;Teaching timetable</strong>
+                                <strong><i class="icon-calendar icon-large"></i>&nbsp; Create a Teaching
+                                    timetable</strong>
                             </div>
 
                             <br>
