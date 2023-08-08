@@ -35,13 +35,7 @@ include('session.php');
                                 <?php } ?><i class="icon-group  icon-large"></i>&nbsp;Lecturers
                             </a>
                     </li>
-                    <li>
-                        <?php if (($l == 6) or ($l == 7) or ($l == 1) or ($l == 2) or ($l == 9) or ($l == 10) or $l == 8) { ?><a
-                            href="student.php">
-                            <?php } else { ?> <a href="#" onClick="alert('ACCESS DENIED')">
-                                <?php } ?><i class="icon-group icon-large"></i>&nbsp;Student
-                            </a>
-                    </li>
+
 
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -51,21 +45,21 @@ include('session.php');
                         <ul class="dropdown-menu">
                             <li>
                                 <?php if (($l == 3) or ($l == 7) or ($l == 6) or ($l == 1) or ($l == 2) or ($l == 9) or ($l == 10)) { ?><a
-                                    href="course.php">
+                                        href="course.php">
                                     <?php } else { ?> <a href="#" onClick="alert('ACCESS DENIED')">
                                         <?php } ?>Program
                                     </a>
                             </li>
                             <li>
                                 <?php if (($l == 3) or ($l == 7) or ($l == 6) or ($l == 1) or ($l == 2) or ($l == 10) or ($l == 9)) { ?><a
-                                    href="subject.php">
+                                        href="subject.php">
                                     <?php } else { ?> <a href="#" onClick="alert('ACCESS DENIED')">
                                         <?php } ?>Course
                                     </a>
                             </li>
                             <li>
                                 <?php if (($l == 3) or ($l == 7) or ($l == 1) or ($l == 2) or ($l == 9)) { ?><a
-                                    href="department.php">
+                                        href="department.php">
                                     <?php } else { ?> <a href="#" onClick="alert('ACCESS DENIED')">
                                         <?php } ?>Department
                                     </a>
