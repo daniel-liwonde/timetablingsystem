@@ -1,0 +1,50 @@
+.sign-in{
+background-color:#ffffff;
+height:260px;
+border-radius:3px;
+ margin-top:50px;
+ margin:0 auto;
+ box-shadow: 0 0 0 1px rgba(20,20,31,.05), 0 1px 3px 0 rgba(20,20,31,.15);
+ width: 30%;
+}
+.submit{
+    width:60%;height:29px; font-size:16px;background-color:#61C2A2;height:40px;max-width: 300px;
+}
+
+.msg{
+    margin-bottom:-7px;
+     width:60%; 
+     margin-left:123px
+}
+.corver{
+    border:1px solid;
+    width:100%;
+    position:relative;
+
+    
+}
+.hero-unit-3 {
+            margin-top: 30px;
+}
+.display {
+        margin-top: -12px;
+    }
+
+    #semester,
+    #state2,
+    #state,
+    #m,
+    #x2,
+    #x,
+    #y,
+    #sel {
+        width: 120px;
+    }
+
+    .mod {
+        color: #61C2A2
+    }
+
+    .bgmode {
+        background-color: #61C2A2
+    }

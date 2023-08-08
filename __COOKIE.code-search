@@ -1,0 +1,461 @@
+# Query: $_COOKIE
+# Including: ./sims
+# ContextLines: 1
+
+159 results - 49 files
+
+carry.php:
+  94                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+  95:                     <strong><?php echo $student_row['firstname'];?></strong>&nbsp;Welcome. <span class="pull-right">Programme:<?php echo $_SESSION['pro'];?> ,Current year:<?php echo $_SESSION['year'];?>, Semester:<?php echo $_SESSION['ssem'];?></span>
+  96                  </div>
+
+do.php:
+   3  //session_start();
+   4: $id=$_SESSION['id'];
+   5  $myauth=mysqli_query($conn,"select * from teacher where teacher_id='$id' and auth=1")or die(mysqli_error($conn));
+
+  41                                     $sem = $_GET['sem'];
+  42: 								   $add=$_SESSION['id'];
+  43  			      
+
+grade_temp.php:
+   47                          <?php
+   48: 						if(isset($_SESSION['level'])){
+   49:                         $l=$_SESSION['level'];
+   50  							 if(($l==2)||($l==1)||($l==9)){   ?>
+
+   72  							 if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+   73: 					        $id=$_SESSION['id'];		
+   74  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+  141                                 <?php 
+  142: 							if(isset($_SESSION['level'])){
+  143: 							$l=$_SESSION['level'];
+  144  							 if($l==9){   ?>
+
+grades.php:
+   59  $status=mysqli_fetch_array($sels);
+   60: if($status['x']==1 && $_SESSION['id']!=5) {
+   61   ?>
+
+  103                          <?php
+  104: 						if(isset($_SESSION['level'])){
+  105:                         $l=$_SESSION['level'];
+  106  							 if(($l==2)||($l==1)||($l==9)){   ?>
+
+  128  							 if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+  129: 					        $id=$_SESSION['id'];		
+  130  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+  196                                 <?php 
+  197: 							if(isset($_SESSION['level'])){
+  198: 							$l=$_SESSION['level'];
+  199  							 if(($l==2)||($l==3) ||($l==1)){   ?>
+
+  214  
+  215:                 <?php if(isset($_SESSION['ERR'])){?>
+  216                  
+  217                      
+  218:                                     <div class="alert alert-info" style="margin-left:-120px;"><strong style="color:#FF0000" ><?php echo $_SESSION['ERR']; unset($_SESSION['ERR']); ?></strong>
+  219                                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+
+index.php:
+  12  										$_SESSION['level']=$row['user_level'];
+  13:                                         //$_SESSION['id'] = $row['user_id'];
+  14  										$_SESSION["id"]=$row['user_id'];
+
+  28                      setcookie("id",$row['teacher_id'] ,0, "/","biu-edu.com");
+  29:                     //$_SESSION['id'] = $row['teacher_id'];
+  30:                    // $_SESSION['level']=$row['user_level'];
+  31                     $_SESSION['level']=$row['user_level'];
+
+  72                                        //setcookie("denied",$message,0);
+  73:                                       //echo $_SESSION["denied"];
+  74  					                    }//end not found
+
+logout_teacher.php:
+  1  <?php
+  2: unset($_SESSION['id']);
+  3  //session_start();
+
+logout.php:
+  3  include('admin/connect.php');
+  4: $idz=$_SESSION["id"];
+  5  mysqli_query($conn,"update notice_view set logged_out='1' where viewer_id='$idz'") or die(mysqli_error($conn));
+
+navhead_user.php:
+  53                                    <?php 
+  54: 								  //$ur=  $_SESSION['USER'];
+  55: 								 $L= $_SESSION["level"];
+  56                                      $student_query=mysqli_query($conn,"select * from teacher where teacher_id='$session_id' and user_level='$L'")or die(mysqli_error($conn));
+
+notify.php:
+   15  $status=mysqli_fetch_array($sels);
+   16: if($status['x']==1 && $_SESSION['id']!=5) {
+   17   ?>
+
+   59                          <?php
+   60: 						if(isset($_SESSION['level'])){
+   61:                         $l=$_SESSION['level'];
+   62  							 if(($l==2)||($l==1)||($l==9)){   ?>
+
+   84  							 if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+   85: 					        $id=$_SESSION['id'];		
+   86  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+  152                                 <?php 
+  153: 							if(isset($_SESSION['level'])){
+  154:                         $l=$_SESSION['level'];
+  155  						}
+
+prev.php:
+    4  include ('admin/functions.php');   
+    5: $start=$_SESSION['ADM_YEAR'];       
+    6  $user_query = mysqli_query($conn,"select * from student where id='$session_id'") or die(mysqli_error($conn));
+
+  100                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+  101:                     <strong><?php echo$user_row['lastname']."  ". $user_row['firstname'];?>,</strong>&nbsp;Welcome. <span class="pull-right">Programme:<?php echo $_SESSION['pro'];?> ,Current year:<?php echo $_SESSION['year'];?>, Semester:<?php echo $_SESSION['ssem'];?></span>
+  102                  </div>
+
+register.php:
+   99                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+  100:                     <strong><?php echo $student_row['firstname'];?></strong>&nbsp;Welcome. <span class="pull-right">Programme:<?php echo $_SESSION['pro'];?> ,Current year:<?php echo $_SESSION['year'];?>, Semester:<?php echo $_SESSION['ssem'];?></span>
+  101                  </div>
+
+reports.php:
+   61                          <?php
+   62: 						if(isset($_SESSION['level'])){
+   63:                         $l=$_SESSION['level'];
+   64  							 if(($l==2)||($l==1)||($l==9)){   ?>
+
+   86  							 if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+   87: 					        $id=$_SESSION['id'];		
+   88  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+  151                                 <?php 
+  152: 							if(isset($_SESSION['level'])){
+  153: 							$l=$_SESSION['level'];
+  154  							 if(($l==2)||($l==3) ||($l==1)){   ?>
+
+session.php:
+   5  	//Check whether the session variable SESS_MEMBER_ID is present or not
+   6: 	if(!isset($_SESSION["id"])) {
+   7  		header("location:index.php");
+
+   9  	}
+  10: $session_id=$_SESSION["id"];
+  11  ?>
+
+student_details.php:
+  93                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+  94:                     <strong><?php echo $user_row['firstname'];?></strong>&nbsp;Welcome. <span class="pull-right">Programme:<?php echo $_SESSION['pro'];?> ,Current year:<?php echo $_SESSION['year'];?>, Semester:<?php echo $_SESSION['ssem'];?></span>
+  95                  </div>
+
+student_home.php:
+  97                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+  98:                     <strong><?php echo $user_row['lastname']." ".$user_row['firstname'];?>,</strong>&nbsp;Welcome. <span class="pull-right">Programme:<?php echo $_SESSION['pro'];?> ,Current year:<?php echo $_SESSION['year'];?>, Semester:<?php echo $_SESSION['ssem'];?></span>
+  99                  </div>
+
+student_modal.php:
+  58                      session_regenerate_id();
+  59:                     $_SESSION['id'] = $row['student_id'];
+  60                      header('location:student_home.php');
+
+students.php:
+   46                          <?php
+   47: 						if(isset($_SESSION['level'])){
+   48:                         $l=$_SESSION['level'];
+   49  							 if(($l==2)||($l==1)||($l==9)){   ?>
+
+   71  							 if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+   72: 					        $id=$_SESSION['id'];		
+   73  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+  128                                 <?php 
+  129: 							if(isset($_SESSION['level'])){
+  130: 							$l=$_SESSION['level'];
+  131  							 if(($l==2)||($l==3) ||($l==1)){   ?>
+
+students2.php:
+   46                          <?php
+   47: 						if(isset($_SESSION['level'])){
+   48:                         $l=$_SESSION['level'];
+   49  							 if(($l==2)||($l==1)||($l==9)){   ?>
+
+   71  							 if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+   72: 					        $id=$_SESSION['id'];		
+   73  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+  128                                 <?php 
+  129: 							if(isset($_SESSION['level'])){
+  130: 							$l=$_SESSION['level'];
+  131  							 if(($l==2)||($l==3) ||($l==1)){   ?>
+
+teacher_add_student.php:
+   93  							  if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+   94: 					        $id=$_SESSION['id'];		
+   95  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+  155                                 <?php 
+  156: 							if(isset($_SESSION['level'])){
+  157: 							$l=$_SESSION['level'];
+  158  							 if(($l==2)||($l==3) ||($l==1)){   ?>
+
+teacher_add_student2.php:
+  115  							 if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+  116: 					        $id=$_SESSION['id'];		
+  117  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+  176                                 <?php 
+  177: 							if(isset($_SESSION['level'])){
+  178: 							$l=$_SESSION['level'];
+  179  							 if(($l==2)||($l==3) ||($l==1)){   ?>
+
+teacher_add_student3.php:
+   95  							  if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+   96: 					        $id=$_SESSION['id'];		
+   97  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+  157                                 <?php 
+  158: 							if(isset($_SESSION['level'])){
+  159: 							$l=$_SESSION['level'];
+  160  							 if(($l==2)||($l==3) ||($l==1)){   ?>
+
+teacher_class.php:
+   54                          <?php
+   55: 						if(isset($_SESSION['level'])){
+   56:                         $l=$_SESSION['level'];
+   57  							 if(($l==2)||($l==1)||($l==9)){   ?>
+
+   79  							 if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+   80: 					        $id=$_SESSION['id'];
+   81  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+  142                                 <?php
+  143: 							if(isset($_SESSION['level'])){
+  144: 							$l=$_SESSION['level'];
+  145  							 if(($l==2)||($l==3) ||($l==1)){   ?>
+
+  168  
+  169:                 <?php if(isset($_SESSION['ERR'])){?>
+  170  
+  171  
+  172:                                     <div class="alert alert-info" style="margin-left:-120px;"><strong style="color:#FF0000" ><?php echo $_SESSION['ERR']; unset($_SESSION['ERR']); ?></strong>
+  173                                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+
+teacher_home.php:
+  16  $status=mysqli_fetch_array($sels);
+  17: if($status['x']==1 && $_SESSION['id']!=5) {
+  18   ?>
+
+  60                          <?php
+  61: 						if(isset($_SESSION['level']))
+  62:                         $l=$_SESSION['level'];
+  63  						
+
+  88  							 if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+  89: 					        $id=$_SESSION['id'];		
+  90  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+teacher_modal.php:
+  58                      session_regenerate_id();
+  59:                     $_SESSION['id'] = $row['teacher_id'];
+  60                      header('location:teacher_home.php');
+
+teacher_subject.php:
+   46                          <?php
+   47: 						if(isset($_SESSION['level'])){
+   48:                         $l=$_SESSION['level'];
+   49  							 if(($l==2)||($l==1)||($l==9)){   ?>
+
+   71  							 if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+   72: 					        $id=$_SESSION['id'];		
+   73  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+  128                                 <?php 
+  129: 							if(isset($_SESSION['level'])){
+  130: 							$l=$_SESSION['level'];
+  131  							 if(($l==2)||($l==3) ||($l==1)){   ?>
+
+uploaded.php:
+   48                          <?php
+   49: 						if(isset($_SESSION['level'])){
+   50:                         $l=$_SESSION['level'];
+   51  							 if(($l==2)||($l==1)||($l==9)){   ?>
+
+   73  							 if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+   74: 					        $id=$_SESSION['id'];		
+   75  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+  142                                 <?php 
+  143: 							if(isset($_SESSION['level'])){
+  144: 							$l=$_SESSION['level'];
+  145  							 if($l==9){   ?>
+
+x.php:
+  3  //session_start();
+  4: $id=$_SESSION["id"];
+  5  $myauth=mysqli_query($conn,"select * from teacher where teacher_id='$id'")or die(mysqli_error($conn));
+
+x2.php:
+  4  $grant=grant_access(); 
+  5: $id=$_SESSION['id'];
+  6  if($grant==1)
+
+admin\approved.php:
+  11  {
+  12: $_SESSION['ERR']="amount is less than total amount available MWK".$s['remander'];
+  13  header('location:home.php');
+
+  27  if(empty($rf)){
+  28: $_SESSION['ERR']="enter reason for refusal";
+  29  header('location:home.php');
+
+admin\archive.php:
+   9  {
+  10: $_SESSION['ERR']="Select Transcript first";
+  11  header("location:transcript.php");
+
+  17  {
+  18: $_SESSION['ERR']="Results already archived";
+  19  header("location:transcript.php");
+
+  32  mysqli_query($conn,"delete from student where id='$sname'") or die(mysqli_error($conn));
+  33: $_SESSION['ERR']="Results archived";
+  34  header("location:transcript.php");
+
+admin\delete_student.php:
+  10  {
+  11: $_SESSION['ERR']="Can not archive student has fees payments";
+  12  header('location:student.php');
+
+  31  mysqli_query($conn,"delete from teacher_student where uid='$get_id'")or die(mysqli_error($conn));
+  32: $_SESSION['ERR']="Student archived";
+  33  header('location:student.php');
+
+admin\domo.php:
+  16  
+  17:                       $_SESSION['u']="DELETED";
+  18  							 }
+
+  37                          <div class="hero-unit-3" style="width:105%">
+  38:                            <?php if(isset($_SESSION['ERR'])&& ($_SESSION['ERR']!='')){?>
+  39:                              <div class="alert alert-danger"><i class="icon-remove-sign"></i>&nbsp;<?php echo $_SESSION['ERR'];$_SESSION['ERR']=''; ?></div>
+  40                              <?php  }
+
+  46                              ?>  
+  47: <div id="msg"> <?php if(isset($_SESSION['u'])) echo $_SESSION['u'];$_SESSION['u']='';?> </div>							
+  48  <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="example" >
+
+admin\edit_fees.php:
+  4  <?php
+  5: $added_by=$_SESSION['id'];
+  6  ?>
+
+admin\enterfees.php:
+  4  <?php
+  5: $added_by=$_SESSION['id'];
+  6  ?>
+
+admin\enterfees2.php:
+  4  <?php
+  5: $added_by=$_SESSION['id'];
+  6  ?>
+
+admin\farchive.php:
+  113                              <?php 
+  114: 							if(isset($_SESSION['level'])){
+  115: 							$l=$_SESSION['level'];
+  116  							 if(($l==4)||($l==3) ||($l==2)||($l==1)){   ?>
+
+admin\logout.php:
+  2  include('connect.php');
+  3: $idz=$_SESSION["id"];
+  4  mysqli_query($conn,"update user set auth='0' where user_id='$idz'") or die(mysqli_error($conn));
+  5: setcookie($_SESSION['id'],'',time()-360);
+  6: setcookie($_SESSION['level'],'',time()-360);
+  7  
+
+admin\session.php:
+  6  	}
+  7:  $session_id=$_SESSION['id'];
+
+admin\student_course.php:
+  5  //Unset the variables stored in session
+  6: unset($_SESSION['id']);
+  7  ?>
+
+admin\student.php:
+  23                          <div class="hero-unit-3" style="width:105%">
+  24:                            <?php if(isset($_SESSION['ERR'])&& ($_SESSION['ERR']!='')){?>
+  25:                              <div class="alert alert-danger"><i class="icon-remove-sign"></i>&nbsp;<?php echo $_SESSION['ERR'];$_SESSION['ERR']=''; ?></div>
+  26                              <?php  }?>
+
+admin\transcript_masters.php:
+  193                  <?php  }?>
+  194:                 <?php if (isset($_SESSION['ERR'])) echo"<div class='alert alert-danger'> &nbsp;$_SESSION[ERR]</div>"; unset($_SESSION['ERR']);?>
+  195                  <!-- user delete modal -->
+
+admin\transcript.php:
+  201                  <?php  }?>
+  202:                 <?php if (isset($_SESSION['ERR'])) echo"<div class='alert alert-danger'> &nbsp;$_SESSION[ERR]</div>"; unset($_SESSION['ERR']);?>
+  203                  <!-- user delete modal -->
+
+admin\x.php:
+  3  //session_start();
+  4: $id=$_SESSION['id'];
+  5  $myauth=mysqli_query($conn,"select * from user where user_id='$id'")or die(mysqli_error($conn));
+
+updated\carry.php:
+  73                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+  74:                     <strong><?php echo $student_row['firstname'];?></strong>&nbsp;Welcome. <span class="pull-right">Programme:<?php echo $_SESSION['pro'];?> ,Current year:<?php echo $_SESSION['year'];?>, Semester:<?php echo $_SESSION['ssem'];?></span>
+  75                  </div>
+
+updated\logout.php:
+   3  include('admin/connect.php');
+   4: $idz=$_SESSION['id'];
+   5  mysqli_query($conn,"update notice_view set logged_out='1' where viewer_id='$idz'") or die(mysqli_error($conn));
+   6: unset($_SESSION['id']);
+   7: unset($_SESSION['level']);
+   8: unset($_SESSION['year']);
+   9: unset($_SESSION['ssem']);
+  10: unset($_SESSION['ADM_YEAR']);
+  11  //session_destroy();
+
+updated\notify.php:
+   15  $status=mysqli_fetch_array($sels);
+   16: if($status['x']==1 && $_SESSION['id']!=5) {
+   17   ?>
+
+   59                          <?php
+   60: 						if(isset($_SESSION['level'])){
+   61:                         $l=$_SESSION['level'];
+   62  							 if(($l==2)||($l==1)||($l==9)){   ?>
+
+   84  							 if(mysqli_num_rows($subjects)==0){ echo "No subjects Yet";}
+   85: 					        $id=$_SESSION['id'];		
+   86  $user=mysqli_query($conn,"select * from teacher where  teacher_id='$id'") or die("here".mysqli_error($conn));
+
+  152                                 <?php 
+  153: 							if(isset($_SESSION['level'])){
+  154:                         $l=$_SESSION['level'];
+  155  						}
+
+updated\prev.php:
+   4  include ('admin/functions.php');   
+   5: $start=$_SESSION['ADM_YEAR'];       
+   6  $user_query = mysqli_query($conn,"select * from student where id='$session_id'") or die(mysqli_error($conn));
+
+  74                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+  75:                     <strong><?php echo $student_row['firstname'];?></strong>&nbsp;Welcome. <span class="pull-right">Programme:<?php echo $_SESSION['pro'];?> ,Current year:<?php echo $_SESSION['year'];?>, Semester:<?php echo $_SESSION['ssem'];?></span>
+  76                  </div>
+
+updated\student_details.php:
+  73                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+  74:                     <strong><?php echo $student_row['firstname'];?></strong>&nbsp;Welcome. <span class="pull-right">Programme:<?php echo $_SESSION['pro'];?> ,Current year:<?php echo $_SESSION['year'];?>, Semester:<?php echo $_SESSION['ssem'];?></span>
+  75                  </div>
+
+updated\student_home.php:
+  75                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+  76:                     <strong><?php echo $student_row['firstname'];?></strong>&nbsp;Welcome. <span class="pull-right">Programme:<?php echo $_SESSION['pro'];?> ,Current year:<?php echo $_SESSION['year'];?>, Semester:<?php echo $_SESSION['ssem'];?></span>
+  77                  </div>

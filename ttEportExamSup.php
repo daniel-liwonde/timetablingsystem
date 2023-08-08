@@ -1,0 +1,49 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<?php
+require_once('connect.php');
+require_once('session.php');
+require_once('functions.php');
+$sem = (checksem() == 1) ? "Jan-June" : "July-Dec";
+$year = date('Y');
+$prvYear = $year - 1;
+?>
+
+<head>
+    <title></title>
+    <?php
+    header("Content-Type:application/msword");
+    header("Expires: 0");
+    header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+    header("content-disposition: attachment;filename={$year}-{$sem}_Exam_Timetable.doc");
+    ?>
+    <html>
+
+    <head>
+    </head>
+
+<body>
+    <h2>
+        <center>Malawi University of Applied Sciences</center>
+    </h2>
+    <div class="alert alert-info text-center"><i class="icon-calendar icon-large"></i>
+        <center>&nbsp;
+            <b>
+                <?php echo "  $prvYear/$year Semester" ?> Supplementary Examinations Time table
+            </b>
+
+
+
+        </center>
+    </div>
+    <br>
+    <?php
+    require_once("timeGenDisplaySup.php");
+    ?>
+</body>
+
+</html>
+<?php
+
+exit; // end of word output
+?>
