@@ -46,9 +46,7 @@ $sem = checksem();
                             <br>
 
                             &nbsp;<a id="tGen" class="btn btn-outline rounded" href="#"><i class="fas fa-gear mod"></i>
-                                &nbsp; Generate time table</a>&nbsp; &nbsp;
-                            <a class="btn btn-outline rounded" href="timetable.php?idz=2"><i class="fas fa-eye mod"></i>
-                                &nbsp;View time table</a>
+                                &nbsp; Generate time table</a>
                             &nbsp; &nbsp;<a class="btn btn-outline rounded" href="ttEport.php"><i
                                     class="fas fa-file-export mod"></i> &nbsp;Export to exel
                             </a>&nbsp; &nbsp;
