@@ -59,7 +59,7 @@ $sem = checksem();
                                 &nbsp;settings</a>
                             <br>
                             <br>
-                            <div id="message" style="height:10px; display:none">
+                            <div id="message" style="height:10px; position:fixed; display:none">
                             </div>
 
                             <script>
@@ -83,7 +83,7 @@ $sem = checksem();
                                     $("#tGen").click(function () {
                                         $("#message").css("display", "inline");
                                         $("#message").css("padding-bottom", "20px");
-                                        $("#message").html("<i class='fa-solid fa-gear fa-spin fa-lg mod'></i>&nbsp;Generating timetable...");
+                                        $("#message").html("<i class='fa-solid fa-gear fa-spin fa-lg mod'></i>&nbsp;<span class='mod'>Generating timetable...</span>");
                                         $.ajax({
                                             url: 'time.php',
                                             method: 'POST',

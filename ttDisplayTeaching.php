@@ -27,13 +27,14 @@ while ($day = mysqli_fetch_assoc($days)) {
                 $currentRoom = $room_rows['room'];
                 $roomLocation = $room_rows['location'];
                 $currentRoomID = $room_rows['id'];
+                $rCapacity = $room_rows['capacity'];
                 ?>
                 <tr>
                     <td>
                         <?php echo $day['day']; ?>
                     </td>
                     <td>
-                        <?php echo "$currentRoom<br>(<font color='#61C2A2'>$roomLocation</font>)"; ?>
+                        <?php echo "$currentRoom($rCapacity)<br>(<font color='#61C2A2'>$roomLocation</font>)"; ?>
 
                     </td>
                     <?php
@@ -47,9 +48,12 @@ while ($day = mysqli_fetch_assoc($days)) {
 
                             echo "<td style='text-align:center;vertical-align:middle;''>-</td>";
                         } else {
+                            $rate = mysqli_query($conn, "SELECT students FROM subject WHERE  subject_title='$data'") or die(mysqli_error($conn));
+                            $studNums = mysqli_fetch_assoc($rate);
+                            $students = $studNums['students'];
                             ?>
                             <td>
-                                <?php echo $data ?>
+                                <?php echo "$data ($students)" ?>
                                 <a title="Remove" onclick='doDeleteTeaching(<?php echo json_encode($data) ?>,<?php echo $cid ?>)'><i
                                         class='fas fa-remove fa-sm'></i></a></li>
                                 <br>
@@ -71,7 +75,7 @@ while ($day = mysqli_fetch_assoc($days)) {
                                 <?php
                                 while ($r = mysqli_fetch_assoc($classes)) {
                                     if ($i == 3) {
-                                        echo "<font color='#61C2A2'>{$r['classname']}</font><br>";
+                                        echo "<font color='#61C2A2'>{$r['classname']},</font><br>";
                                         $i = 0;
                                     } else
                                         echo "<font color='#61C2A2'>{$r['classname']}</font>,";

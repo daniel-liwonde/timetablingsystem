@@ -22,8 +22,9 @@ if (mysqli_num_rows($find_weeks) == 0) {
 
             <tr>
                 <th> DAY</th>
-                <th> VENUE</th>
+
                 <th> TIME</th>
+                <th> VENUE</th>
                 <th> COURSES</th>
             </tr>
 
@@ -55,6 +56,10 @@ if (mysqli_num_rows($find_weeks) == 0) {
 
                         </td>
                         <td>
+                            <?php echo $sFrom; ?> -
+                            <?php echo $sTo; ?>
+                        </td>
+                        <td>
                             <?php
                             $duproom = mysqli_query($conn, "SELECT * from examvenues INNER JOIN rooms ON examvenues.room=rooms.room");
                             while ($room = mysqli_fetch_assoc($duproom))
@@ -67,24 +72,21 @@ if (mysqli_num_rows($find_weeks) == 0) {
                                     ?>
 
                             </td>
+
                             <td>
-                            <?php echo $sFrom; ?> -
-                            <?php echo $sTo; ?>
-                        </td>
-                        <td>
 
-                            <ul>
+                                <ul>
 
-                                <?php
+                                    <?php
 
-                                $getSchedule = mysqli_query($conn, "SELECT * FROM examschedule WHERE edate='$cdate' AND sessionid='$sessionid'
+                            $getSchedule = mysqli_query($conn, "SELECT * FROM examschedule WHERE edate='$cdate' AND sessionid='$sessionid'
                         AND exam_week='$eWeek' ");
-                                while ($row = mysqli_fetch_assoc($getSchedule)) {
-                                    $cid = $row["scheduleid"];
-                                    $course = $row['course'];
-                                    echo "<li>$course <a title='remove' onclick='doDelete(" . json_encode($course) . ",$cid)'><i class='fas fa-remove fa-sm'></i></a></li>";
-                                }
-                                ?>
+                            while ($row = mysqli_fetch_assoc($getSchedule)) {
+                                $cid = $row["scheduleid"];
+                                $course = $row['course'];
+                                echo "<li>$course <a title='remove' onclick='doDelete(" . json_encode($course) . ",$cid)'><i class='fas fa-remove fa-sm'></i></a></li>";
+                            }
+                            ?>
 
                             </ul>
                         </td>

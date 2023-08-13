@@ -66,35 +66,61 @@ while ($day_rows = mysqli_fetch_assoc($days)) {
 						//schedule course
 						$check = mysqli_query($conn, "SELECT * FROM checker WHERE courseid='$courseid'");
 						if (mysqli_num_rows($check) == 0) { // picked course is not scheduled give it the first slot
-
-							mysqli_query($conn, "INSERT INTO schedule(dayid,roomid,timeslot,allocatedcourse,
+							//check room capacity before assigning
+							if (checkRoomCompatibility($conn, $currentRoomID, $courseid) == 1) {
+								mysqli_query($conn, "INSERT INTO schedule(dayid,roomid,timeslot,allocatedcourse,
 lectid,lecturerfname,lecturerlname)
 values('$currentDayID','$currentRoomID',$slot,'$course','$teacher_id','$teacherf','$teacherl')") or
-								die(mysqli_error($conn));
-							mysqli_query($conn, "INSERT INTO checker(courseid,slots)
+									die(mysqli_error($conn));
+								mysqli_query($conn, "INSERT INTO checker(courseid,slots)
 values('$courseid',1)") or die(mysqli_error($conn));
-							//add the course to added course array
-							$addedCourseDetails = array(
-								'dayid' => $currentDayID,
-								'slot' => $slot,
-								'teacher_id' => $teacher_id,
-								'courseid' => $courseid
-							);
-							$clashchecker[] = $addedCourseDetails;
+								//add the course to added course array
+								$addedCourseDetails = array(
+									'dayid' => $currentDayID,
+									'slot' => $slot,
+									'teacher_id' => $teacher_id,
+									'courseid' => $courseid
+								);
+								$clashchecker[] = $addedCourseDetails;
+							} //end check room capacity
+							else { //keep the course for reschedule
+								$leftCourseDetails = array(
+									'dayid' => $currentDayID,
+									'slot' => $slot,
+									'room' => $currentRoomID
+								);
+								$leftSlots[] = $leftCourseDetails;
+								mysqli_query($conn, "INSERT INTO schedule(dayid,roomid,timeslot)
+		values('$currentDayID','$currentRoomID',$slot)") or die(mysqli_error($conn));
+							} //end keep course for reschedule
 						} // end course not scheduled
 						else { //course already scheduled atleast once
 							$checksessions = mysqli_fetch_assoc($check);
 							$checkSlots = $checksessions['slots']; //find number of slots
 							if ($checkSlots == 1) {
 								//give the course a second slot and update checker
-								mysqli_query($conn, "INSERT INTO
+
+								if (checkRoomCompatibility($conn, $currentRoomID, $courseid) == 1) { //check room capacity
+									mysqli_query($conn, "INSERT INTO
 schedule(dayid,roomid,timeslot,allocatedcourse,lectid,lecturerfname,lecturerlname)
 values('$currentDayID','$currentRoomID',$slot,'$course','$teacher_id','$teacherf','$teacherl')") or
-									die(mysqli_error($conn));
-								mysqli_query($conn, "UPDATE checker SET slots=slots+1 WHERE courseid='$courseid' ");
-								//since two sessions are done remove course from list
-								unset($teacherCourses[$randomIndex]);
-								$teacherCourses = array_values($teacherCourses);
+										die(mysqli_error($conn));
+									mysqli_query($conn, "UPDATE checker SET slots=slots+1 WHERE courseid='$courseid' ");
+									//since two sessions are done remove course from list
+									unset($teacherCourses[$randomIndex]);
+									$teacherCourses = array_values($teacherCourses);
+								}
+								//end check room capacity
+								else { //keep course for reschedule
+									$leftCourseDetails = array(
+										'dayid' => $currentDayID,
+										'slot' => $slot,
+										'room' => $currentRoomID
+									);
+									$leftSlots[] = $leftCourseDetails;
+									mysqli_query($conn, "INSERT INTO schedule(dayid,roomid,timeslot)
+		values('$currentDayID','$currentRoomID',$slot)") or die(mysqli_error($conn));
+								} //end keep course for reschedule
 							} //end give it second slot
 						} //end course already scheduled atleast once
 						//end schedule course
@@ -132,65 +158,10 @@ if (count($teacherCourses2) > 0) {
 			$slot = $lslot['slot'];
 			$currentDayID = $lslot['dayid'];
 			$currentRoomID = $lslot['room'];
-			//START CHECK FOR CLASS CLASH
-			$classClashChecker = checkClassClash($clashchecker, $conn, $courseid, $currentDayID, $slot);
-			//START CHECK FOR TEACHER CLASH
-			$teacherClashChecker = checkTeacherClash($clashchecker, $teacher_id, $currentDayID, $slot);
-			if (($classClashChecker == false) && ($teacherClashChecker == false)) { //no crash will occour proceed  
-				$check = mysqli_query($conn, "SELECT * FROM checker WHERE courseid='$courseid'");
-				if (mysqli_num_rows($check) == 0) {
-					mysqli_query($conn, "UPDATE schedule SET allocatedcourse='$course', lectid='$teacher_id',
-				lecturerfname='$teacherf',lecturerlname='$teacherl' WHERE dayid='$currentDayID' AND roomid='$currentRoomID' 
-				AND timeslot='$slot'");
-					mysqli_query($conn, "INSERT INTO checker(courseid,slots)
-values('$courseid',1)") or die(mysqli_error($conn));
-					//add the course to added course array
-					$addedCourseDetails = array(
-						'dayid' => $currentDayID,
-						'slot' => $slot,
-						'teacher_id' => $teacher_id,
-						'courseid' => $courseid
-					);
-					$clashchecker[] = $addedCourseDetails;
-				} // end course not scheduled
-				else { //course already scheduled atleast once
-					mysqli_query($conn, "UPDATE schedule SET allocatedcourse='$course', lectid='$teacher_id',
-				lecturerfname='$teacherf',lecturerlname='$teacherl' WHERE dayid='$currentDayID' AND roomid='$currentRoomID' 
-				AND timeslot='$slot'");
-					mysqli_query($conn, "UPDATE checker SET slots=slots+1 WHERE courseid='$courseid' ");
-					//since two sessions are done remove course from list
-					unset($teacherCourses2[$randomIndex]);
-					$teacherCourses2 = array_values($teacherCourses2);
-				} //course scheduled once
-			} //close no clash will occour
-			else { //clash will occour
-				$leftCourseDetails = array(
-					'dayid' => $currentDayID,
-					'slot' => $slot,
-					'room' => $currentRoomID
-				);
-				$leftSlots2[] = $lesftCourseDetails;
-			} //close clash will occour
-		} //close if array is valid
-	} //close  for each left slots
-	$teacherCourses3 = $teacherCourses2;
-	//start third attempt
-	if (count($teacherCourses3) > 0) { //start third attempt
-		//ALLOCATE FOR THE LAST TIME
-		foreach ($leftSlots2 as $lslot) {
-			if (count($teacherCourses3) > 0) { //check if array is valid
-				$randomIndex = array_rand($teacherCourses3);
-				$randomCourse = $teacherCourses3[$randomIndex];
-				//$randomCourse = $teacherCourses[array_rand($teacherCourses)];
-				$teacherf = $randomCourse['firstname'];
-				$teacherl = $randomCourse['lastname'];
-				$course = $randomCourse['subject_title'];
-				$courseid = $randomCourse['subject_id'];
-				$teacher_id = $randomCourse['teacher_id'];
-				$slot = $lslot['slot'];
-				$currentDayID = $lslot['dayid'];
-				$currentRoomID = $lslot['room'];
+
+			if (checkRoomCompatibility($conn, $currentRoomID, $courseid) == 1) { //check room capacity
 				//START CHECK FOR CLASS CLASH
+
 				$classClashChecker = checkClassClash($clashchecker, $conn, $courseid, $currentDayID, $slot);
 				//START CHECK FOR TEACHER CLASH
 				$teacherClashChecker = checkTeacherClash($clashchecker, $teacher_id, $currentDayID, $slot);
@@ -217,22 +188,93 @@ values('$courseid',1)") or die(mysqli_error($conn));
 				AND timeslot='$slot'");
 						mysqli_query($conn, "UPDATE checker SET slots=slots+1 WHERE courseid='$courseid' ");
 						//since two sessions are done remove course from list
-						unset($teacherCourses3[$randomIndex]);
-						$teacherCourses3 = array_values($teacherCourses3);
+						unset($teacherCourses2[$randomIndex]);
+						$teacherCourses2 = array_values($teacherCourses2);
 					} //course scheduled once
 				} //close no clash will occour
+				else { //clash will occour
+					$leftCourseDetails = array(
+						'dayid' => $currentDayID,
+						'slot' => $slot,
+						'room' => $currentRoomID
+					);
+					$leftSlots2[] = $lesftCourseDetails;
+				} //close clash will occour
+			} //end check room capacity
+			else { //keep course for reschedule
+				$leftCourseDetails = array(
+					'dayid' => $currentDayID,
+					'slot' => $slot,
+					'room' => $currentRoomID
+				);
+				$leftSlots2[] = $lesftCourseDetails;
+			} //close keep slot for reschedules
+		} //close if array is valid
+
+	} //close  for each left slots
+	$teacherCourses3 = $teacherCourses2;
+	//start third attempt
+	if (count($teacherCourses3) > 0) { //start third attempt
+		//ALLOCATE FOR THE LAST TIME
+		foreach ($leftSlots2 as $lslot) {
+			if (count($teacherCourses3) > 0) { //check if array is valid
+				$randomIndex = array_rand($teacherCourses3);
+				$randomCourse = $teacherCourses3[$randomIndex];
+				//$randomCourse = $teacherCourses[array_rand($teacherCourses)];
+				$teacherf = $randomCourse['firstname'];
+				$teacherl = $randomCourse['lastname'];
+				$course = $randomCourse['subject_title'];
+				$courseid = $randomCourse['subject_id'];
+				$teacher_id = $randomCourse['teacher_id'];
+				$slot = $lslot['slot'];
+				$currentDayID = $lslot['dayid'];
+				$currentRoomID = $lslot['room'];
+				if (checkRoomCompatibility($conn, $currentRoomID, $courseid) == 1) { //check room capacity
+					//START CHECK FOR CLASS CLASH
+					$classClashChecker = checkClassClash($clashchecker, $conn, $courseid, $currentDayID, $slot);
+					//START CHECK FOR TEACHER CLASH
+					$teacherClashChecker = checkTeacherClash($clashchecker, $teacher_id, $currentDayID, $slot);
+					if (($classClashChecker == false) && ($teacherClashChecker == false)) { //no crash will occour proceed  
+						$check = mysqli_query($conn, "SELECT * FROM checker WHERE courseid='$courseid'");
+						if (mysqli_num_rows($check) == 0) {
+							mysqli_query($conn, "UPDATE schedule SET allocatedcourse='$course', lectid='$teacher_id',
+				lecturerfname='$teacherf',lecturerlname='$teacherl' WHERE dayid='$currentDayID' AND roomid='$currentRoomID' 
+				AND timeslot='$slot'");
+							mysqli_query($conn, "INSERT INTO checker(courseid,slots)
+values('$courseid',1)") or die(mysqli_error($conn));
+							//add the course to added course array
+							$addedCourseDetails = array(
+								'dayid' => $currentDayID,
+								'slot' => $slot,
+								'teacher_id' => $teacher_id,
+								'courseid' => $courseid
+							);
+							$clashchecker[] = $addedCourseDetails;
+						} // end course not scheduled
+						else { //course already scheduled atleast once
+							mysqli_query($conn, "UPDATE schedule SET allocatedcourse='$course', lectid='$teacher_id',
+				lecturerfname='$teacherf',lecturerlname='$teacherl' WHERE dayid='$currentDayID' AND roomid='$currentRoomID' 
+				AND timeslot='$slot'");
+							mysqli_query($conn, "UPDATE checker SET slots=slots+1 WHERE courseid='$courseid' ");
+							//since two sessions are done remove course from list
+							unset($teacherCourses3[$randomIndex]);
+							$teacherCourses3 = array_values($teacherCourses3);
+						} //course scheduled once
+					} //close no clash will occour
+				} //close  check room capacity
 			} //close if array is valid
 		} //close  for each left slots
 		if (count($teacherCourses3) > 0) { //failed to allocate even for the third time, reset data and regenerate
-			echo "<div class=' alert alert-warning'><i class='fas fa-check-circle'></i>&nbsps;Time table generated successifully however {} courses could not be allocated. You can reset the 
-			data and regenerate again or if you can allocate the remaing courses you can. Below is the list, please note that the courses might have been allocated once
+			$leftstill = (count($teacherCourses3));
+			echo "<div class=' alert alert-warning'><i class='fas fa-check-circle'></i>&nbsps;Time table generated successifully however $leftstill courses could not be allocated. You can reset the 
+			data and regenerate again or if you can allocate the remaing courses manually you can. Below is the list, please note that the courses might have been allocated once
 			";
 			echo "<ol>";
 			foreach ($teacherCourses3 as $fcourse) {
 				echo "<li> {$fcouse['subject_title']} </li>";
 			}
 			echo "</ol></div>";
-		} else { //allocated third ateempt
+		} else { //allocated  all courses third atempt
 			echo "<div class='alert alert-success'>
 			<button type='button' class='close' data-dismiss='alert'>&times;</button>
 			<i class='fas fa-check-circle'></i>&nbsp;Time table generated successifully in 3 attempt , all courses are allocated</div>";

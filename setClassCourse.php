@@ -79,7 +79,7 @@ if (isset($_POST['subid'])) {
                                             <select name="coName" required>
                                                 <option value="">Select course </option>
                                                 <?php
-                                                $findc = mysqli_query($conn, "SELECT * FROM subject WHERE teacher_id !=0  order by subject_title asc");
+                                                $findc = mysqli_query($conn, "SELECT * FROM subject   order by subject_title asc");
                                                 while ($rowsc = mysqli_fetch_assoc($findc)) {
                                                     ?>
                                                     <option value="<?php echo $rowsc['subject_id'] ?>">
@@ -104,7 +104,8 @@ if (isset($_POST['subid'])) {
                                 <div>
                                     <?php if (isset($msg))
                                         echo $msg;
-                                    unset($msg); ?>
+                                    unset($msg); ?><a href="ttSetings.php">&nbsp;&nbsp;<i
+                                            class="fas fa-arrow-left"></i>Back</a>
                                 </div>
                                 <div Class="alert alert-info" style="margin-top:20px">The following are courses in <b>
                                         <?php
