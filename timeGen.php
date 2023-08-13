@@ -59,36 +59,47 @@ if (mysqli_num_rows($find_weeks) == 0) {
                             <?php echo $sFrom; ?> -
                             <?php echo $sTo; ?>
                         </td>
-                        <td>
-                            <?php
-                            $duproom = mysqli_query($conn, "SELECT * from examvenues INNER JOIN rooms ON examvenues.room=rooms.room");
-                            while ($room = mysqli_fetch_assoc($duproom))
+                        <td colspan="2">
+                            <table class="table table-bordered table-hover">
+                                <?php
+                                $duproom = mysqli_query($conn, "SELECT * from examvenues INNER JOIN rooms ON examvenues.room=rooms.room");
+                                while ($room = mysqli_fetch_assoc($duproom)) {
+                                    ?>
 
-                                echo "{$room['room']}
+                                    <tr>
+                                        <td>
+                                            <?php
+                                            echo "{$room['room']}
                                  (<font color='#61C2A2'>{$room['location']}</font>)<br>
                                 "
 
 
-                                    ?>
+                                                ?>
+                                        </td>
 
-                            </td>
+                                        <td>
+                                            <ul>
 
-                            <td>
+                                                <?php
 
-                                <ul>
-
-                                    <?php
-
-                            $getSchedule = mysqli_query($conn, "SELECT * FROM examschedule WHERE edate='$cdate' AND sessionid='$sessionid'
+                                                $getSchedule = mysqli_query($conn, "SELECT * FROM examschedule WHERE edate='$cdate' AND sessionid='$sessionid'
                         AND exam_week='$eWeek' ");
-                            while ($row = mysqli_fetch_assoc($getSchedule)) {
-                                $cid = $row["scheduleid"];
-                                $course = $row['course'];
-                                echo "<li>$course <a title='remove' onclick='doDelete(" . json_encode($course) . ",$cid)'><i class='fas fa-remove fa-sm'></i></a></li>";
-                            }
-                            ?>
+                                                while ($row = mysqli_fetch_assoc($getSchedule)) {
+                                                    $cid = $row["scheduleid"];
+                                                    $course = $row['course'];
+                                                    echo "<li>$course <a title='remove' onclick='doDelete(" . json_encode($course) . ",$cid)'><i class='fas fa-remove fa-sm'></i></a></li>";
+                                                }
 
-                            </ul>
+                                                ?>
+
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                    <?php
+                                }
+                                ?>
+
+                            </table>
                         </td>
                     </tr>
                     <?php
