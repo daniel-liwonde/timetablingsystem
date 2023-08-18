@@ -39,7 +39,7 @@ if (($start_date < $today) || ($end_date < $today)) {
                 "res" => "<div class='alert alert-danger'> <i class='fas fa-circle-exclamation'></i> &nbsp;End date can
         not be less than  or equal to start date</div>"
             )
-        );
+        ); 
     } else {
 
         $scheduleDetails = array();
@@ -138,16 +138,27 @@ if (($start_date < $today) || ($end_date < $today)) {
                                     $randomCourse = $teacherCourses[$randomIndex];
                                     $course = $randomCourse['subject_title'];
                                     $courseid = $randomCourse['subject_id'];
+                                    $venues=mysqli_query($conn,"SELECT * FROM examvenues") or die(mysqli_error($conn));
+                                    while($row=mysqli_fetch_assoc($venues))
+                                    {//open rooms
+                                        $rname=$row['room'];
+                                        $getRroom=mysqli_query($conn,"SELECT * FROM rooms where room='$rname'") or die(mysqli_error($conn));
+                                        $room=mysqli_fetch_assoc($getRroom);
+                                        $capacity=$room['capacity'];
+                                        $roomId= $room["id"];
+                                        if(checkRoomCompatibility($conn, $roomId, $courseid)==1)
+                                        {//start check room capacity
                                     $foundClash = checkClassClashExam($clashchecker, $conn, $courseid);
                                     if ($foundClash == false) {
                                         //echo "<li> $course</li>";
-                                        mysqli_query($conn, "INSERT INTO examschedule (edate,courseid,course,sessionid,exam_week) 
+                                        mysqli_query($conn, "INSERT INTO examschedule (edate,courseid,course,sessionid,exam_week,roomid) 
             VALUES('$thedate','$courseid','$course','$sessionid','$i')");
                                         $clashchecker[] = $courseid;
                                         unset($teacherCourses[$randomIndex]);
                                         $teacherCourses = array_values($teacherCourses);
                                     }
-
+                                }//close  check room capacity
+                                }//close rooms
                                 }
                             }
                         } //close for loop session
