@@ -10,7 +10,7 @@ $msgP;
 //cancelling a course manual schedule
 if (isset($_GET['id'])) {
     $del = $_GET['id'];
-    $done = mysqli_query($conn, "DELETE FROM examvenues WHERE id='$del'");
+    $done = mysqli_query($conn, "DELETE FROM examvenues WHERE rid='$del'");
     if ($done) { //done
         if (mysqli_affected_rows($conn) > 0) {
             $msgc = "<div class='alert alert-success'><i class='fas fa-check-circle'></i> &nbsp;Room  successifully removed!</div>";
@@ -120,7 +120,7 @@ if (isset($_POST['addClass'])) {
                                                 
                                                 while ($rows = mysqli_fetch_assoc($find)) {
                                                     ?>
-                                                    <option value="<?php echo $rows['room'] ?>"><?php echo $rows['room'] ."(".$rows['location'].")"?>
+                                                    <option value="<?php echo $rows['room'] ?>"><?php echo $rows['room'] ."(".$rows['location']."(".$rows['capacity'].")".")"?>
                                                     </option>
                                                     <?php
                                                 }
@@ -163,6 +163,7 @@ if (isset($_POST['addClass'])) {
                                         <tr>
                                             <th>Room Name</th>
                                              <th>Campus</th>
+                                             <th>Capacity</th>
                                             <th>Action</th>
 
 
@@ -183,12 +184,15 @@ if (isset($_POST['addClass'])) {
                                                 <td>
                                                     <?php echo $rows['room'] ?>
                                                 </td>
-                                                 <td>
+                                                <td>
+                                                    <?php echo $rows['capacity'] ?>
+                                                    </td>
+                                                     <td>
                                                     <?php echo $rows['location'] ?>
                                                     </td>
                                                     <td>
                                                         <a class="btn btn-danger"
-                                                            href="examTTSettings.php?id=<?php echo $rows['id'] ?>">
+                                                            href="examTTSettings.php?id=<?php echo $rows['rid'] ?>">
                                                         <i class="fas fa-remove"></i>
                                                     </a>
                                                 </td>

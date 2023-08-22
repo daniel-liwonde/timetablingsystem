@@ -10,7 +10,7 @@ $msgP;
 //cancelling a course manual schedule
 if (isset($_GET['id'])) {
     $del = $_GET['id'];
-    $done = mysqli_query($conn, "DELETE FROM examvenuessup WHERE id='$del'");
+    $done = mysqli_query($conn, "DELETE FROM examvenuessup WHERE rid='$del'");
     if ($done) { //done
         if (mysqli_affected_rows($conn) > 0) {
             $msgc = "<div class='alert alert-success'><i class='fas fa-check-circle'></i> &nbsp;Room  successifully removed!</div>";
@@ -186,7 +186,7 @@ if (isset($_POST['addClass'])) {
                                                 </td>
                                                 <td>
                                                     <a class="btn btn-danger"
-                                                        href="examTTSettingsSup.php?id=<?php echo $rows['id'] ?>">
+                                                        href="examTTSettingsSup.php?id=<?php echo $rows['rid'] ?>">
                                                         <i class="fas fa-remove"></i>
                                                     </a>
                                                 </td>
