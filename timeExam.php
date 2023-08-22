@@ -128,52 +128,49 @@ if ($sdate == '' || $edate == '') {
                                 while ($row = mysqli_fetch_assoc($getSchedule)) {
                                     $clashchecker[] = $row['courseid'];
                                 }
-                                for ($j = 1; $j <= $sessionsPerCourse; $j++) { //loop courses
-                                    if (count($teacherCourses) > 0) { //check if array is valid
-                                        $randomIndex = array_rand($teacherCourses);
-                                        $randomCourse = $teacherCourses[$randomIndex];
-                                        $course = $randomCourse['subject_title'];
-                                        $courseid = $randomCourse['subject_id'];
-                                        $noOfStudents = $randomCourse['students'];
-                                        $venues = mysqli_query($conn, "SELECT * FROM room_records WHERE capacity >='$noOfStudents' AND session='$sessionid'
-                                    AND edate='$thedate'  AND exam_week=$i") or die(mysqli_error($conn));
-                                        if (mysqli_num_rows($venues) > 0) {
-                                            $roomRow = mysqli_fetch_assoc($venues);
-                                            $foundCapacity = $roomRow['capacity'];
-                                            $roomId = $roomRow['id'];
-                                            $update = 1;
-                                        } else {
-                                            $venues = mysqli_query($conn, "SELECT * FROM  examvenues INNER JOIN rooms ON  examvenues.room=rooms.room WHERE 
-                                                rooms.capacity>='$noOfStudents'") or die(mysqli_error($conn));
-                                            $roomRow = mysqli_fetch_assoc($venues);
-                                            $foundCapacity = $roomRow['capacity'];
-                                            $update = 0;
-                                            $roomId = $roomRow['id'];
-
-                                        }
-                                        if ($foundCapacity >= $noOfStudents) { // open capacity ok
-                                            $foundClash = checkClassClashExam($clashchecker, $conn, $courseid);
-                                            if ($foundClash == false) { // start no clash will occour proceed
-                                                //echo "<li> $course</li>";
-                                                mysqli_query($conn, "INSERT INTO examschedule (edate,courseid,course,sessionid,exam_week,roomid) 
+                                $roomQuery = "SELECT * FROM examvenues INNER JOIN rooms ON examvenues.room=rooms.room";
+                                $rooms = $conn->query($roomQuery);
+                                if ($rooms->num_rows > 0) { //open if there are rooms assigned
+                                    $roomsArray = [];
+                                    while ($room = $rooms->fetch_assoc()) {
+                                        $roomsArray[] = $room;
+                                    }
+                                    for ($j = 1; $j <= $sessionsPerCourse; $j++) { //loop courses
+                                        if (count($teacherCourses) > 0) { //check if array is valid
+                                            $randomIndex = array_rand($teacherCourses);
+                                            $randomCourse = $teacherCourses[$randomIndex];
+                                            $course = $randomCourse['subject_title'];
+                                            $courseid = $randomCourse['subject_id'];
+                                            $noOfStudents = $randomCourse['students'];
+                                            $allocated = false;
+                                            // Shuffle the rooms array to pick rooms at random
+                                            $randomRoomIndex = array_rand($roomsArray);
+                                            $randomRoom = $roomsArray[$randomRoomIndex];
+                                            $roomCapacity = $randomRoom['capacity'];
+                                            $roomId = $randomRoom['id'];
+                                            if ($roomCapacity >= $noOfStudents) { // open capacity ok
+                                                $foundClash = checkClassClashExam($clashchecker, $conn, $courseid);
+                                                if ($foundClash == false) { // start no clash will occour proceed
+                                                    //echo "<li> $course</li>";
+                                                    mysqli_query($conn, "INSERT INTO examschedule (edate,courseid,course,sessionid,exam_week,roomid) 
             VALUES('$thedate','$courseid','$course','$sessionid','$i','$roomId')");
-                                                $clashchecker[] = $courseid;
-                                                unset($teacherCourses[$randomIndex]);
-                                                $teacherCourses = array_values($teacherCourses);
-                                                $currentCapacity = $foundCapacity - $noOfStudents;
-                                                if ($update == 0) { //start insert data intoo room records
-                                                    mysqli_query($conn, "INSERT INTO room_records (roomid,	session,edate,capacity,exam_week) 
-            VALUES('$roomId','$sessionid','$thedate',' $currentCapacity','$i')");
-                                                } //end insert data into room records
-                                                else { // start update room records  capacity
-                                                    mysqli_query($conn, "UPDATE  room_records SET capacity=capacity-$foundCapacity WHERE
-                                                     roomid='$roomId' AND session='$sessionid' AND 	edate='$thedate' AND exam_week=$i") or die(mysqli_error($conn));
-                                                } //close update room records
-                                            } //close no clash will occour
-                                        } //close capacity ok
-                                    } //close check if array is ok
-                                } //close loop courses
-
+                                                    $clashchecker[] = $courseid;
+                                                    unset($teacherCourses[$randomIndex]);
+                                                    $teacherCourses = array_values($teacherCourses);
+                                                    $roomCapacity = $roomCapacity - $noOfStudents;
+                                                    $randomRoom['capacity'] = $roomCapacity;
+                                                } //close no clash will occour
+                                            } //close capacity ok
+                                        } //close check if array is ok
+                                    } //close loop courses
+                                } //close if rooms are assigned
+                                else { // no rooms message
+                                    echo json_encode(
+                                        array(
+                                            "res" => "<div class='alert alert-danger'> <i class='fas fa-circle-exclamation'></i> &nbsp;No rooms are availabe please assign rooms</div>"
+                                        )
+                                    );
+                                } //close no rooms message
                             } //close for loop session
                         } //close sessions are available
                     } //close not weekend
@@ -196,65 +193,54 @@ if ($sdate == '' || $edate == '') {
                         $sesions = mysqli_query($conn, "Select * FROM examsessions");
                         $clashchecker = array();
                         //mysqli_data_seek($sesions, 0);
+
                         while ($sess = mysqli_fetch_assoc($sesions)) {
                             //******************************************************* */
-                            for ($j = 1; $j <= $sessionsPerCourse; $j++) { //possible number of courses to insert
-                                if (count($teacherCourses) > 0) { //check if array is valid
-                                    $randomIndex = array_rand($teacherCourses);
-                                    $randomCourse = $teacherCourses[$randomIndex];
-                                    $course = $randomCourse['subject_title'];
-                                    $courseid = $randomCourse['subject_id'];
-                                    $sessionid = $sess['id'];
-                                    $eDate = $dates['edate'];
-                                    $getSchedule = mysqli_query($conn, "SELECT * FROM examschedule WHERE edate='$eDate' AND sessionid='$sessionid'
+                            $roomQuery = "SELECT * FROM examvenues INNER JOIN rooms ON examvenues.room=rooms.room";
+                            $rooms = $conn->query($roomQuery);
+                            if ($rooms->num_rows > 0) { //open if there are rooms assigned
+                                $roomsArray = [];
+                                while ($room = $rooms->fetch_assoc()) {
+                                    $roomsArray[] = $room;
+                                }
+                                for ($j = 1; $j <= $sessionsPerCourse; $j++) { //possible number of courses to insert
+                                    if (count($teacherCourses) > 0) { //check if array is valid
+                                        $randomIndex = array_rand($teacherCourses);
+                                        $randomCourse = $teacherCourses[$randomIndex];
+                                        $course = $randomCourse['subject_title'];
+                                        $courseid = $randomCourse['subject_id'];
+                                        $noOfStudents = $randomCourse['students'];
+                                        $sessionid = $sess['id'];
+                                        $eDate = $dates['edate'];
+                                        $getSchedule = mysqli_query($conn, "SELECT * FROM examschedule WHERE edate='$eDate' AND sessionid='$sessionid'
                         AND exam_week='$eWeek'");
-                                    while ($row = mysqli_fetch_assoc($getSchedule)) {
-                                        $clashchecker[] = $row['courseid'];
-                                    }
-                                    //*************************************************************************** */
-                                    $noOfStudents = $randomCourse['students'];
-                                    $venues = mysqli_query($conn, "SELECT * FROM room_records WHERE capacity >='$noOfStudents' AND session='$sessionid'
-                                    AND edate='$eDate'  AND exam_week='$eWeek'") or die(mysqli_error($conn));
-                                    if (mysqli_num_rows($venues) > 0) {
-                                        $roomRow = mysqli_fetch_assoc($venues);
-                                        $foundCapacity = $roomRow['capacity'];
-                                        $roomId = $roomRow['id'];
-                                        $update = 1;
-                                    } else {
-                                        $venues = mysqli_query($conn, "SELECT * FROM  examvenues INNER JOIN rooms ON  examvenues.room=rooms.room WHERE 
-                                                rooms.capacity>='$noOfStudents'") or die(mysqli_error($conn));
-                                        $roomRow = mysqli_fetch_assoc($venues);
-                                        $foundCapacity = $roomRow['capacity'];
-                                        $update = 0;
-                                        $roomId = $roomRow['id'];
+                                        while ($row = mysqli_fetch_assoc($getSchedule)) {
+                                            $clashchecker[] = $row['courseid'];
+                                        }
+                                        //*************************************************************************** */
 
-                                    }
-                                    if ($foundCapacity >= $noOfStudents) { // open capacity ok
-                                        //************************************************************************* */
-                                        $foundClash = checkClassClashExam($clashchecker, $conn, $courseid);
-                                        if ($foundClash == false) { //if no clash will occour
-                                            //echo "<li> $course</li>";
-                                            mysqli_query($conn, "INSERT INTO examschedule (edate,courseid,course,sessionid,exam_week,roomid) 
+                                        $randomRoomIndex = array_rand($roomsArray);
+                                        $randomRoom = $roomsArray[$randomRoomIndex];
+                                        $roomCapacity = $randomRoom['capacity'];
+                                        $roomId = $randomRoom['id'];
+                                        if ($roomCapacity >= $noOfStudents) { // open capacity ok
+                                            //************************************************************************* */
+                                            $foundClash = checkClassClashExam($clashchecker, $conn, $courseid);
+                                            if ($foundClash == false) { //if no clash will occour
+                                                //echo "<li> $course</li>";
+                                                mysqli_query($conn, "INSERT INTO examschedule (edate,courseid,course,sessionid,exam_week,roomid) 
             VALUES('$eDate','$courseid','$course','$sessionid','$eWeek','$roomId')");
 
-                                            $clashchecker[] = $courseid;
-                                            unset($teacherCourses[$randomIndex]);
-                                            $teacherCourses = array_values($teacherCourses);
-                                            //****************************************************************** */
-                                            $currentCapacity = $foundCapacity - $noOfStudents;
-                                            if ($update == 0) { //start insert data intoo room records
-                                                mysqli_query($conn, "INSERT INTO room_records (roomid,	session,edate,capacity,exam_week) 
-            VALUES('$roomId','$sessionid','$eDate',' $currentCapacity','$eWeek')");
-                                            } //end insert data into room records
-                                            else { //open update room records  capacity
-                                                mysqli_query($conn, "UPDATE  room_records SET capacity=capacity-$foundCapacity WHERE
-                                                     roomid='$roomId' AND session='$sessionid' AND 	edate='$eDate' AND exam_week='$eWeek'") or die(mysqli_error($conn));
-                                            } //close update room records
-                                            //*********************************************************************** */
-                                        } //close if no clash
-                                    } //close if capacity ok
-                                } //close possible number of courses to add
-                            } //************************************************************ */
+                                                $clashchecker[] = $courseid;
+                                                unset($teacherCourses[$randomIndex]);
+                                                $teacherCourses = array_values($teacherCourses);
+                                                $roomCapacity = $roomCapacity - $noOfStudents;
+                                                $randomRoom['capacity'] = $roomCapacity;
+                                            } //close if no clash
+                                        } //close if capacity ok
+                                    } //close array is valid
+                                } //close possible number of courses
+                            } //close if rooms are assigned
                         } //close while session
                     } //end current date
                 } //end weeks
