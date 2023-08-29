@@ -1,6 +1,5 @@
 <?php
 require('connect.php');
-mysqli_query($conn, "TRUNCATE TABLE room_records") or die(mysqli_error($conn));
 $del = mysqli_query($conn, "TRUNCATE TABLE examschedule") or die(mysqli_error($conn));
 echo json_encode(
     array(

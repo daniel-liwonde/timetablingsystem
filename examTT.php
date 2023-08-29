@@ -68,7 +68,7 @@ $sem = checksem();
                                         $.getJSON("ttResetExam.php", function (data) {
                                             $("#message").html(data.res); setTimeout(function () {
                                                 $("#message").css("display", "none");
-                                            }, 9000);
+                                            }, 3000);
                                         });
                                     });
                                 });

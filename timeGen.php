@@ -93,7 +93,9 @@ if (mysqli_num_rows($find_weeks) == 0) {
                                                     $query = mysqli_query($conn, "SELECT  students FROM subject WHERE subject_title='$course'");
                                                     $rate = mysqli_fetch_assoc($query);
                                                     $students = $rate['students'];
-                                                    echo "<li>$course($students) <a title='remove' onclick='doDelete(" . json_encode($course) . ",$cid)'><i class='fas fa-remove fa-sm'></i></a></li>";
+                                                    $round = $row['round'];
+                                                    $rspace = $row['rspace'];
+                                                    echo "<li>$course($students)-(r=$round)(rspace:$rspace)<a title='remove' onclick='doDelete(" . json_encode($course) . ",$cid)'><i class='fas fa-remove fa-sm'></i></a></li>";
                                                 }
 
                                                 ?>
