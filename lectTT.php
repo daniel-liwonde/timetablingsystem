@@ -1,6 +1,10 @@
 <?php
+
+require_once('ttFunctions.php');
+require_once('connect.php');
 if (isset($_POST['show'])) {
     $lect = $_POST['lect'];
+    $sem = showCurrentSem($conn);
     $findLect = mysqli_query($conn, "SELECT  firstname,lastname from teacher where teacher_id='$lect'");
     $theName = mysqli_fetch_assoc($findLect);
     echo "<div class='alert alert-info'><i class='icon-calendar icon-large'></i>&nbsp;Time table for:<b> {$theName['lastname']} &nbsp;{$theName['firstname']}</b></div>";
@@ -25,7 +29,7 @@ if (isset($_POST['show'])) {
 
             <?php
 
-            $findDays = mysqli_query($conn, "SELECT  distinct dayid from  schedule where lectid='$lect'");
+            $findDays = mysqli_query($conn, "SELECT  distinct dayid from  schedule where lectid='$lect' AND sem='$sem'");
             if (mysqli_num_rows($findDays) > 0) {
 
                 while ($day = mysqli_fetch_assoc($findDays)) {
@@ -36,8 +40,8 @@ if (isset($_POST['show'])) {
                     $dayName = $theDay['day'];
                     echo "<tr>";
                     echo "<td>{$dayName}</td>";
-                    $findslots = mysqli_query($conn, "SELECT roomid,timeslot, allocatedcourse FROM schedule WHERE dayid='$dayID' 
-							 AND lectid='$lect' ORDER BY timeslot ASC");
+                    $findslots = mysqli_query($conn, "SELECT roomid, sem,timeslot, allocatedcourse FROM schedule WHERE dayid='$dayID' 
+							 AND lectid='$lect' AND sem='$sem' ORDER BY timeslot ASC");
 
 
                     for ($i = 0; $i < 6; $i++) {

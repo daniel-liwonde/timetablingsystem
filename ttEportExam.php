@@ -2,11 +2,8 @@
     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <?php
 require_once('connect.php');
-require_once('session.php');
-require_once('functions.php');
-$sem = (checksem() == 1) ? "Jan-June" : "July-Dec";
-$year = date('Y');
-$prvYear = $year - 1;
+require_once('ttFunctions.php');
+$sem = showCurrentSem($conn);
 ?>
 
 <head>
@@ -15,7 +12,7 @@ $prvYear = $year - 1;
     header("Content-Type:application/msword");
     header("Expires: 0");
     header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-    header("content-disposition: attachment;filename={$year}-{$sem}_Exam_Timetable.doc");
+    header("content-disposition: attachment;filename=$sem _Exam_Timetable.doc");
     ?>
     <html>
 
@@ -29,7 +26,7 @@ $prvYear = $year - 1;
     <div class="alert alert-info text-center"><i class="icon-calendar icon-large"></i>
         <center>&nbsp;
             <b>
-                <?php echo "  $prvYear/$year Semester" ?>
+                <?php echo "$sem  Semester" ?>
                 Master Examinations Time table
             </b>
 

@@ -48,14 +48,16 @@ $sem = checksem();
                             <a class="btn btn-outline rounded" href="ttEportExam.php"><i
                                     class="fas fa-file-export mod"></i> &nbsp;Export
                                 Timetable</a>&nbsp; &nbsp;
-                            <a id="clearData" class="btn btn-outline rounded"
-                                onclick="return confirm('This action will clear all timetable preferences and  data. Do you want to continue?')"
-                                href="#"> <i class="fas fa-undo mod"></i> &nbsp;Reset data</a>&nbsp; &nbsp;
-                            <a class="btn btn-outline rounded" href="examTTSettings.php"> <i
+                            <a id="clearData" class="btn btn-outline rounded" href="#"> <i class="fas fa-undo mod"></i>
+                                &nbsp;Reset data</a>&nbsp; &nbsp;
+                            <a class="btn btn-outline rounded" href="examTTSettings.php?menu=3"> <i
                                     class="fas fa-gear mod"></i>
                                 &nbsp;settings</a>
 
                             <br>
+                            <div id="cs" style="margin-top:30px">
+
+                            </div>
                             <br>
                             <div id="message">
 
@@ -63,13 +65,16 @@ $sem = checksem();
                             <script>
                                 $(document).ready(function () {
                                     $(" #clearData").click(function () {
-                                        $("#message").css("display", "inline");
-                                        $("#message").html("<p> <i class='fa-solid fa-gear fa-spin fa-lg mod'></i> &nbsp;Reseting data...<p>");
-                                        $.getJSON("ttResetExam.php", function (data) {
-                                            $("#message").html(data.res); setTimeout(function () {
-                                                $("#message").css("display", "none");
-                                            }, 3000);
-                                        });
+                                        var conf = confirm("This action will clear your timetable data including preferences. Proceed?")
+                                        if (conf) {
+                                            $("#message").css("display", "inline");
+                                            $("#message").html("<p> <i class='fa-solid fa-gear fa-spin fa-lg mod'></i> &nbsp;Reseting data...<p>");
+                                            $.getJSON("ttResetExam.php", function (data) {
+                                                $("#message").html(data.res); setTimeout(function () {
+                                                    $("#message").css("display", "none");
+                                                }, 3000);
+                                            });
+                                        }
                                     });
                                 });
                                 //===================
@@ -84,9 +89,6 @@ $sem = checksem();
                                         },
                                             function (data) {
                                                 $("#message").html(data.res);
-                                                setTimeout(function () {
-                                                    $("#message").css("display", "none");
-                                                }, 9000);
 
                                             });
                                     });

@@ -12,7 +12,7 @@ if (isset($_POST['login'])) { // start
         $_SESSION['level'] = $row['user_level'];
         //$_COOKIE['id'] = $row['user_id'];
         $_SESSION["id"] = $row['user_id'];
-        header('location:timetable.php');
+        header('location:timetable.php?menu=1');
         session_write_close();
         exit();
     } //end found user

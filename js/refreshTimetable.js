@@ -43,4 +43,6 @@
     xhttp.open("GET", "ttLect.php?lect="+lect, true);
     xhttp.send();
 }
+
+  
   

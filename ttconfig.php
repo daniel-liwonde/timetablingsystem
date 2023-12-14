@@ -2,33 +2,36 @@
 require_once('session.php');
 require_once('header.php');
 require_once('connect.php');
-require('functions.php');
+require('ttFunctions.php');
 $year = date('Y');
-$sem = checksem();
-if (isset($_GET['subid'])) {
-    $sub = $_GET['subid'];
-    $room = $_GET['roomid'];
-    $tslot = $_GET['slotid'];
-    $day = $_GET['dayid'];
-    $subname = $_GET['subject_title'];
-    $done = mysqli_query($conn, "DELETE FROM schedule WHERE timeslot=$tslot and roomid=$room and dayid=$day AND subject_id=$sub");
-    if ($done) { //done
-        if (mysqli_affected_rows($conn) > 0) {
-            $msgP = "<div class='alert alert-warning'><i class='icon-check icon-large'></i> &nbsp; {$subname}  Removed from schedule successifully!</div>";
+$sem = showCurrentSem($conn);
+if ($sem != 0) {
+    if (isset($_GET['subid'])) {
+        $sub = $_GET['subid'];
+        $room = $_GET['roomid'];
+        $tslot = $_GET['slotid'];
+        $day = $_GET['dayid'];
+        $subname = $_GET['subject_title'];
+        $done = mysqli_query($conn, "DELETE FROM schedule WHERE timeslot=$tslot and roomid=$room and dayid=$day AND subject_id=$sub AND sem='$sem'");
+        if ($done) { //done
+            if (mysqli_affected_rows($conn) > 0) {
+                $msgP = "<div class='alert alert-warning'><i class='icon-check icon-large'></i> &nbsp; {$subname}  Removed from schedule successifully!</div>";
 
-            $getsub = mysqli_query($conn, "SELECT * FROM subject WHERE subject_id='$sub'");
-            $Sessions = mysqli_fetch_assoc($getsub);
+                $getsub = mysqli_query($conn, "SELECT * FROM subject WHERE subject_id='$sub'");
+                $Sessions = mysqli_fetch_assoc($getsub);
 
-            if ($Sessions['allocated'] == 2) {
-                mysqli_query($conn, "UPDATE subject SET allocated=1 WHERE subject_id='$sub'");
-                mysqli_query($conn, "UPDATE checker SET slots=1 WHERE courseid='$sub'");
-            } else {
-                mysqli_query($conn, "UPDATE subject SET allocated=0 WHERE subject_id='$sub'");
-                mysqli_query($conn, "DELETE FROM checker  WHERE courseid='$sub'");
+                if ($Sessions['allocated'] == 2) {
+                    mysqli_query($conn, "UPDATE subject SET allocated=1 WHERE subject_id='$sub' AND sem='$sem'");
+                    mysqli_query($conn, "UPDATE checker SET slots=1 WHERE courseid='$sub' AND sem='$sem'");
+                } else {
+                    mysqli_query($conn, "UPDATE subject SET allocated=0 WHERE subject_id='$sub' AND sem='$sem'");
+                    mysqli_query($conn, "DELETE FROM checker  WHERE courseid='$sub' AND sem='$sem'");
+                }
             }
-        }
-    } //close done
-}
+        } //close done
+    }
+} else
+    $msgP = "<div class='alert alert-warning'><i class='icon-check icon-large'></i> &nbsp; There is no semester set!</div>";
 ?>
 
 <body>
@@ -92,7 +95,9 @@ if (isset($_GET['subid'])) {
                                             
                                             while ($rows = mysqli_fetch_assoc($find)) {
                                                 ?>
-                                                <option value="<?php echo $rows['subject_id'] ?>"><?php echo $rows['subject_title'] ?></option>
+                                                <option value="<?php echo $rows['subject_id'] ?>">
+                                                    <?php echo $rows['subject_title'] ?>
+                                                </option>
                                                 <?php
                                             }
                                             //}
@@ -113,7 +118,8 @@ if (isset($_GET['subid'])) {
                                             
                                             while ($rows = mysqli_fetch_assoc($find)) {
                                                 ?>
-                                                <option value="<?php echo $rows['id'] ?>"><?php echo $rows['day'] ?>
+                                                <option value="<?php echo $rows['id'] ?>">
+                                                    <?php echo $rows['day'] ?>
                                                 </option>
                                                 <?php
                                             }
@@ -135,7 +141,8 @@ if (isset($_GET['subid'])) {
                                             
                                             while ($rows = mysqli_fetch_assoc($find)) {
                                                 ?>
-                                                <option value="<?php echo $rows['id'] ?>"><?php echo $rows['room'] . "(" . $rows['location'] . ") capacity:" . $rows['capacity'] ?>
+                                                <option value="<?php echo $rows['id'] ?>">
+                                                    <?php echo $rows['room'] . "(" . $rows['location'] . ") capacity:" . $rows['capacity'] ?>
                                                 </option>
                                                 <?php
                                             }
@@ -227,7 +234,7 @@ if (isset($_GET['subid'])) {
                                         while ($row = mysqli_fetch_assoc($find)) {
                                             $subid = $row['subject_id'];
                                             $subname = $row['subject_title'];
-                                            $find2 = mysqli_query($conn, "SELECT * FROM schedule WHERE subject_id='$subid'");
+                                            $find2 = mysqli_query($conn, "SELECT * FROM schedule WHERE subject_id='$subid' and sem='$sem'");
                                             mysqli_data_seek($find2, 0);
                                             while ($rows = mysqli_fetch_assoc($find2)) {
                                                 $roomid = $rtag = $rows['roomid'];

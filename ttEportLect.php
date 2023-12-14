@@ -3,15 +3,13 @@
 <?php
 require_once('connect.php');
 require_once('session.php');
-require_once('functions.php');
+require_once("ttFunctions.php");
 $lect = $_GET['Lect'];
 $findLect = mysqli_query($conn, "SELECT  firstname,lastname from teacher where teacher_id='$lect'");
 $theName = mysqli_fetch_assoc($findLect);
 echo "<div class='alert alert-info'><i class='icon-calendar icon-large'></i>&nbsp;Time table for:<b> {$theName['lastname']} &nbsp;{$theName['firstname']}</b></div>";
-
-$sem = (checksem() == 1) ? "Jan-June" : "July-Dec";
-$year = date('Y');
-$prvYear = $year - 1;
+require_once("ttFunctions.php");
+$sem = showCurrentSem($conn);
 ?>
 
 <head>
@@ -20,7 +18,7 @@ $prvYear = $year - 1;
     header("Content-Type:application/msword");
     header("Expires: 0");
     header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-    header("content-disposition: attachment;filename={$theName['lastname']}_Timetable.doc");
+    header("content-disposition: attachment;filename={$theName['lastname']}_ $sem Timetable.doc");
     ?>
     <html>
 
@@ -29,13 +27,13 @@ $prvYear = $year - 1;
 
 <body>
     <h2>
-        <center>Malawi University of Applied Sciences</center>
+        <center>Malawi University of Business and Applied Sciences</center>
     </h2>
     <div class="alert alert-info text-center"><i class="icon-calendar icon-large"></i>
         <center>&nbsp;Time table for:<b>
                 <?php echo $theName['lastname'] . "  " . $theName['firstname'] ?>
             </b> For
-            <?php echo "  $prvYear/$year Semester" ?>
+            <?php echo "  $sem  Semester" ?>
         </center>
     </div>
     <br><br>
@@ -56,7 +54,7 @@ $prvYear = $year - 1;
             <!-- end script -->
 
             <?php
-            $findDays = mysqli_query($conn, "SELECT  distinct dayid from  schedule where lectid='$lect'");
+            $findDays = mysqli_query($conn, "SELECT  distinct dayid from  schedule where lectid='$lect' AND sem='$sem'");
             if (mysqli_num_rows($findDays) > 0) {
                 $j = 1;
                 while ($day = mysqli_fetch_assoc($findDays)) {
@@ -70,7 +68,7 @@ $prvYear = $year - 1;
                         <?php
                         echo "<td>{$dayName}</td>";
                         $findslots = mysqli_query($conn, "SELECT roomid, timeslot, allocatedcourse FROM schedule WHERE 
-dayid='$dayID' AND lectid='$lect' ORDER BY timeslot ASC");
+dayid='$dayID' AND lectid='$lect' AND sem='$sem' ORDER BY timeslot ASC");
                         $slots = array(); // initialize an array to store all the slots for the current day
                         while ($row = mysqli_fetch_assoc($findslots)) {
                             $slots[] = $row; // add the current row to the $slots array
@@ -100,7 +98,7 @@ dayid='$dayID' AND lectid='$lect' ORDER BY timeslot ASC");
                 } //end while days
             } //end if days >0
             else { //no days found
-                echo "<tr><td colspan='7'>No timetable was found for lecturer</td></tr>";
+                echo "<tr><td colspan='7'>No timetable was found for lecturer in $sem semester</td></tr>";
             } //close no days else
             echo "</tbody></table>";
             ?>

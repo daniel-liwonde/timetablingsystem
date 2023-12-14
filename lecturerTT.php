@@ -7,7 +7,7 @@ $year = date('Y');
 $sem = checksem();
 ?>
 
-<body onLoad="StartTimers(jjj);" onmousemove="ResetTimers(lll);">
+<body>
     <div class="row-fluid">
         <div class="span12">
             <?php include 'navbar.php'; ?>
@@ -43,6 +43,7 @@ $sem = checksem();
                                     </a>
                                 </strong>
                             </div>
+
                             <form class="form-inline">
                                 <div class="control-group" style="float:left; padding-right:5px">
 
@@ -55,14 +56,18 @@ $sem = checksem();
                                             
                                             while ($rows = mysqli_fetch_assoc($find)) {
                                                 ?>
-                                                <option value="<?php echo $rows['teacher_id'] ?>"><?php echo $rows['lastname'] . " " . $rows['firstname'] ?></option>
+                                                <option value="<?php echo $rows['teacher_id'] ?>">
+                                                    <?php echo $rows['lastname'] . " " . $rows['firstname'] ?>
+                                                </option>
                                                 <?php
                                             }
                                             //}
                                             ?>
 
                                         </select>
+
                                     </div>
+
                                 </div>
                                 <div class="control-group">
                                     <div class="controls">
@@ -73,6 +78,9 @@ $sem = checksem();
                                     </div>
                                 </div>
                             </form>
+                            <div id="cs" style="margin-top:50px;margin-bottom:10px">
+
+                            </div>
                             <div id="timeTable">
                             </div>
                         </div>

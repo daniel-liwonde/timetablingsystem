@@ -36,8 +36,8 @@ $sem = checksem();
                         <div class="hero-unit-3" style="margin-top:10px">
                             <div class="alert alert-info">
                                 <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                <strong><i class="icon-calendar icon-large mod"></i>&nbsp;Supplementary
-                                    Tiemtable</strong>
+                                <strong><i class="icon-calendar icon-large mod"></i>&nbsp;
+                                    Exam Tiemtable for Selected Courses</strong>
                             </div>
                             <form class="form-inline">
                                 Start date:<input type="date" id="start_date">
@@ -48,17 +48,19 @@ $sem = checksem();
                             &nbsp; &nbsp;<a class="btn btn-outline rounded" href="ttEportExamSup.php"><i
                                     class="fas fa-file-export mod"></i> &nbsp;Export
                                 Timetable</a>&nbsp; &nbsp;
-                            <a id="clearData" class="btn btn-outline rounded"
-                                onclick="return confirm('This action will clear all timetable preferences and  data. Do you want to continue?')"
-                                href="#"> <i class="fas fa-undo mod"></i> &nbsp;Reset data</a>
+                            <a id="clearData" class="btn btn-outline rounded" href="#"> <i class="fas fa-undo mod"></i>
+                                &nbsp;Reset data</a>
                             &nbsp; &nbsp;<a class="btn btn-outline rounded" href="ttaddSupCourses.php"><i
-                                    class="fas fa-circle-plus mod"></i> &nbsp;Add Supp Courses
+                                    class="fas fa-circle-plus mod"></i> &nbsp;Add Selected Courses for
                                 Timetable</a>&nbsp; &nbsp;
-                            <a class="btn btn-outline rounded" href="examTTSettingsSup.php"> <i
+                            <a class="btn btn-outline rounded" href="examTTSettingsSup.php?menu=5"> <i
                                     class="fas fa-gear mod"></i>
                                 &nbsp;settings</a>
 
                             <br>
+                            <div id="cs" style="margin-top:30px">
+
+                            </div>
                             <br>
                             <div id="message">
 
@@ -66,31 +68,30 @@ $sem = checksem();
                             <script>
                                 $(document).ready(function () {
                                     $(" #clearData").click(function () {
-                                        $("#message").css("display", "inline");
-                                        $("#message").html("<p> <i class='fa-solid fa-gear fa-spin fa-lg mod'></i> &nbsp;Reseting data...<p>");
-                                        $.getJSON("ttResetExamSup.php", function (data) {
-                                            $("#message").html(data.res); setTimeout(function () {
-                                                $("#message").css("display", "none");
-                                            }, 9000);
-                                        });
-                                    });
+                                        var conf = confirm("This action will clear your timetable. proceed?")
+                                        if (conf) {
+                                            $("#message").css("display", "inline");
+                                            $("#message").html("<p class='mod'> <i class='fa-solid fa-gear fa-spin fa-lg'></i> &nbsp;Generating....<p>");
+                                            $.getJSON("ttResetExamSup.php", function (data) {
+                                                $("#message").html(data.res); setTimeout(function () {
+                                                    $("#message").css("display", "none");
+                                                }, 3000);
+                                            });
+                                        }//close confirm
+                                    });//close click
                                 });
                                 //===================
                                 $(document).ready(function () {
                                     $("#tGen").click(function (e) {
                                         e.preventDefault();
                                         $("#message").css("display", "inline");
-                                        $("#message").html("<p> <i class='fa-gear fa-spinner fa-spin fa-lg mod'></i> &nbsp;Generating....<p>");
+                                        $("#message").html("<p> <i class='fas fa-gear fa-spinner fa-spin fa-lg mod'></i> &nbsp;Generating....<p>");
                                         $.getJSON("timeExamSup.php", {
                                             start_date: $("#start_date").val(),
                                             end_date: $("#end_date").val()
                                         },
                                             function (data) {
                                                 $("#message").html(data.res);
-                                                setTimeout(function () {
-                                                    $("#message").css("display", "none");
-                                                }, 9000);
-
                                             });
                                     });
                                 });

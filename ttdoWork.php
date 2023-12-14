@@ -6,6 +6,8 @@ $currentRoomID = $_GET['proom'];
 $currentDayID = $_GET['pday'];
 $slot = $_GET['pslot'];
 $courseid = $_GET['pcourse'];
+$sem = showCurrentSem($conn);
+
 $findTeacher = mysqli_query($conn, "SELECT * 
         FROM teacher 
         INNER JOIN subject ON teacher.teacher_id = subject.teacher_id  WHERE subject.subject_id='$courseid'");
@@ -22,27 +24,30 @@ if (mysqli_num_rows($duproom) != 0) {
     if (checkRoomCompatibility($conn, $currentRoomID, $courseid) == 0) { //check if students can fit into the selected room
         echo json_encode(["res" => "<div class='alert alert-danger' style='text-align:left'> <i class='icon-remove-sign'></i> &nbsp; {$course} has a higher number of students than the capacity of the room selected</div>"]);
     } else { //proceed students can fit into the selected room
-        $checkroom = mysqli_query($conn, "SELECT allocatedcourse FROM schedule WHERE dayid='$currentDayID' and timeslot='$slot' AND
-        roomid='$currentRoomID'") or die(mysqli_error($conn));
-        $c = mysqli_fetch_assoc($checkroom);
-        $cn = $c['allocatedcourse'];
-        if ($cn != "") {
-            echo json_encode(["res" => "<div class='alert alert-danger' style='text-align:left'> <i class='icon-remove-sign'></i> &nbsp;Clash will occourse allocating <font color='green'>{$course} </font>at the requested schedule because there is <font color='green'>$cn</font> alreadyat that schedule! please select a different room</div>"]);
+        $checkroom = mysqli_query($conn, "SELECT allocatedcourse,sem FROM schedule WHERE dayid='$currentDayID' and timeslot='$slot' AND
+        roomid='$currentRoomID' AND sem='$sem'") or die(mysqli_error($conn));
+        if (mysqli_num_rows($checkroom) > 0) {
+            $c = mysqli_fetch_assoc($checkroom);
+            $cn = $c['allocatedcourse'];
+            if ($cn != "") {
+                echo json_encode(["res" => "<div class='alert alert-danger' style='text-align:left'> <i class='icon-remove-sign'></i> &nbsp;Clash will occourse allocating <font color='green'>{$course} </font>at the requested schedule because there is <font color='green'>$cn</font> alreadyat that schedule! please select a different room</div>"]);
 
+            }
         } else { //no room clash
-            $checks = mysqli_query($conn, "SELECT * FROM checker WHERE courseid='$courseid' and slots=2");
+            $checks = mysqli_query($conn, "SELECT * FROM checker WHERE courseid='$courseid' and slots=2 AND sem='$sem'");
             if (mysqli_num_rows($checks) > 0) { // check sessions
 
                 echo json_encode(array("res" => "<div class='alert alert-danger'> <i class='icon-remove-sign'></i> &nbsp; {$course} is already scheduled twice</div>"));
             } else { //schedule the course
-                $getSchedule = mysqli_query($conn, "SELECT * FROM schedule");
+                $getSchedule = mysqli_query($conn, "SELECT * FROM schedule WHERE sem='$sem'");
                 while ($row = mysqli_fetch_assoc($getSchedule)) {
                     $clashchecker[] = $row;
                 }
                 $classClashChecker = checkClassClash2($clashchecker, $conn, $courseid, $currentDayID, $slot);
                 //START CHECK FOR TEACHER CLASHs
                 $teacherClashChecker = checkTeacherClash2($clashchecker, $teacher_id, $currentDayID, $slot);
-                if (($classClashChecker == false) && ($teacherClashChecker == false)) { //no crash will occour proceed  
+                if (($classClashChecker == false) && ($teacherClashChecker == false)) { //no crash will occour proceed
+
                     doSchedule(
                         $conn,
                         $courseid,
@@ -53,13 +58,15 @@ if (mysqli_num_rows($duproom) != 0) {
                         $teacher_id,
                         $teacherf,
                         $teacherl,
+                        $sem,
+
                     );
 
                     echo json_encode(array("res" => "<div class='alert alert-success'><i class='fas fa-check-circle icon-large'></i> &nbsp;{$course}  Scheduled successifully! Please reflesh the page to see below</div>"));
                 } //end proceed
                 else {
 
-                    echo json_encode(array("res" => "<div class='alert alert-danger'><i class='icon-remove-sign'></i> &nbsp;The requested schedlue will result in a clash, please choose another schedlue</div>"));
+                    echo json_encode(array("res" => "<div class='alert alert-danger'><i class='icon-remove-sign'></i> &nbsp;The requested schedlue will result in a clash, please choose another slot</div>"));
                 }
             } //end schedule the course
             //echo json_encode(array("ms" => "Ireached the server"));

@@ -1,5 +1,53 @@
 <?php
-require_once('session.php');
+function findMaxSchedule($conn)
+{
+    // Assuming $conn is your database connection
+
+    // Execute the query to get the maximum scheduleid
+    $result = mysqli_query($conn, "SELECT MAX(scheduleid) AS max_scheduleid FROM schedule") or die(mysqli_error($conn));
+
+    // Fetch the result as an associative array
+    $row = mysqli_fetch_assoc($result);
+
+    // Get the maximum scheduleid value
+    $maxScheduleId = $row['max_scheduleid'];
+    if ($maxScheduleId == null)
+        $maxScheduleId = 0;
+    // Output the result or use it as needed
+    return $maxScheduleId;
+
+}
+function findMaxScheduleWend($conn)
+{
+    // Assuming $conn is your database connection
+
+    // Execute the query to get the maximum scheduleid
+    $result = mysqli_query($conn, "SELECT MAX(scheduleid) AS max_scheduleid FROM schedule_wend") or die(mysqli_error($conn));
+
+    // Fetch the result as an associative array
+    $row = mysqli_fetch_assoc($result);
+
+    // Get the maximum scheduleid value
+    $maxScheduleId = $row['max_scheduleid'];
+    if ($maxScheduleId == null)
+        $maxScheduleId = 0;
+    // Output the result or use it as needed
+    return $maxScheduleId;
+
+}
+function showCurrentSem($conn)
+{
+
+    $ss = mysqli_query($conn, "SELECT * FROM currentsem") or die(mysqli_error($conn));
+    if (mysqli_num_rows($ss) == 0)
+        $csem = 0;
+    else {
+        $data = mysqli_fetch_assoc($ss);
+        $s = $data['sem'];
+        $csem = $s;
+    }
+    return $csem;
+}
 //START CHECKING FOR SAME CLASSS COURSE CLASH
 /*
 To avoid course in the same class sloted on the same time slot at the same day
@@ -78,7 +126,7 @@ function checkClassClashExam($clashchecker, $conn, $courseid)
 /*REQUIRED
 compare the current course with the one in added courses
 */
-                        if ($row['courseid'] == $item) { //if the current course belongs to the same class with this courses
+                        if (($row['courseid'] == $item)) { //if the current course belongs to the same class with this courses
                             $found = true;
                             break;
                         }
@@ -123,7 +171,7 @@ compare the current course with the one in added courses
 } //END FUNCTION
 //END CHECKING FOR SAME CLASS CHECK
 //teacher clash checker starts here
-function checkTeacherClash($clashchecker, $teacher_id, $currentDayID, $slot)
+function checkTeacherClash($clashchecker, $teacher_id, $currentDayID, $slot, $sem)
 {
     $found = false;
     foreach ($clashchecker as $items) {
@@ -172,18 +220,22 @@ function doSchedule(
     $course,
     $teacher_id,
     $teacherf,
-    $teacherl
+    $teacherl,
+    $sem
+
 ) {
+    $num = findMaxSchedule($conn);
+
     $check = mysqli_query($conn, "SELECT * FROM checker WHERE courseid='$courseid'");
     if (mysqli_num_rows($check) == 0) { // picked course is not scheduled give it the first slot
-
-        mysqli_query($conn, "INSERT INTO schedule(dayid,roomid,timeslot,allocatedcourse,
-lectid,lecturerfname,lecturerlname,subject_id)
-values('$currentDayID','$currentRoomID',$slot,'$course','$teacher_id','$teacherf','$teacherl','$courseid')") or
+        $num = $num + 1;
+        mysqli_query($conn, "INSERT INTO schedule(scheduleid,dayid,roomid,timeslot,allocatedcourse,
+lectid,lecturerfname,lecturerlname,subject_id,sem)
+values('$num','$currentDayID','$currentRoomID',$slot,'$course','$teacher_id','$teacherf','$teacherl','$courseid','$sem')") or
             die(mysqli_error($conn));
-        mysqli_query($conn, "INSERT INTO checker(courseid,slots)
-values('$courseid',1)") or die(mysqli_error($conn));
-        mysqli_query($conn, "UPDATE subject SET allocated=allocated+1 WHERE subject_id='$courseid' ");
+        mysqli_query($conn, "INSERT INTO checker(courseid,slots,sem)
+values('$courseid',1,'$sem')") or die(mysqli_error($conn));
+        mysqli_query($conn, "UPDATE subject SET allocated=allocated+1 WHERE subject_id='$courseid' and sem='$sem' ");
         //add the course to added course array
     } // end course not scheduled
     else { //course already scheduled atleast once
@@ -191,20 +243,21 @@ values('$courseid',1)") or die(mysqli_error($conn));
         $checkSlots = $checksessions['slots']; //find number of slots
         if ($checkSlots == 1) {
             $check2 = mysqli_query($conn, "SELECT * FROM schedule WHERE dayid='$currentDayID' and timeslot='$slot' AND
-        roomid='$currentRoomID'") or die(mysqli_error($conn));
+        roomid='$currentRoomID' AND sem='$sem'") or die(mysqli_error($conn));
             if (mysqli_num_rows($check2) > 0) { //picked slot already available
                 mysqli_query($conn, "UPDATE schedule  SET allocatedcourse='$course', lectid='$teacher_id',lecturerfname='$teacherf',lecturerlname='$teacherl' WHERE dayid='$currentDayID' and timeslot='$slot' AND
-        roomid='$currentRoomID'") or
+        roomid='$currentRoomID' and sem='$sem'") or
                     die(mysqli_error($conn));
-                mysqli_query($conn, "UPDATE checker SET slots=slots+1 WHERE courseid='$courseid' ");
-                mysqli_query($conn, "UPDATE subject SET allocated=allocated+1 WHERE subject_id='$courseid' ");
+                mysqli_query($conn, "UPDATE checker SET slots=slots+1 WHERE courseid='$courseid'AND sem='$sem' ");
+                mysqli_query($conn, "UPDATE subject SET allocated=allocated+1,sem='$sem' WHERE subject_id='$courseid' ");
             } else {
                 //give the course a second slot and update checker
+                $num = $num + 1;
                 mysqli_query($conn, "INSERT INTO
-schedule(dayid,roomid,timeslot,allocatedcourse,lectid,lecturerfname,lecturerlname,subject_id)
-values('$currentDayID','$currentRoomID',$slot,'$course','$teacher_id','$teacherf','$teacherl','$courseid')") or
+schedule(scheduleid,dayid,roomid,timeslot,allocatedcourse,lectid,lecturerfname,lecturerlname,subject_id,sem)
+values('$num','$currentDayID','$currentRoomID',$slot,'$course','$teacher_id','$teacherf','$teacherl','$courseid','$sem')") or
                     die(mysqli_error($conn));
-                mysqli_query($conn, "UPDATE checker SET slots=slots+1 WHERE courseid='$courseid' ");
+                mysqli_query($conn, "UPDATE checker SET slots=slots+1  WHERE courseid='$courseid' AND sem='$sem' ");
                 mysqli_query($conn, "UPDATE subject SET allocated=allocated+1 WHERE subject_id='$courseid' ");
             }
         } //end give it second slot
@@ -212,143 +265,77 @@ values('$currentDayID','$currentRoomID',$slot,'$course','$teacher_id','$teacherf
 }
 //end do seschedule==========================================
 
-// reseve course for reschedule========================
 
-function lecturerTT($session_id, $conn)
-{
-    $lect = $session_id;
-    $findLect = mysqli_query($conn, "SELECT  firstname,lastname from teacher where teacher_id='$lect'");
-    $theName = mysqli_fetch_assoc($findLect);
-    echo "<div class='alert alert-info'><i class='icon-calendar icon-large'></i>&nbsp;Time table for:<b> {$theName['lastname']} &nbsp;{$theName['firstname']}</b></div>";
+/// Function to do schedule====================================
+//start checking picked course for existances
+/**
+ * Summary of doSchedule
+ * @param mixed $conn
+ * @param mixed $courseid
+ * @param mixed $currentDayID
+ * @param mixed $currentRoomID
+ * @param mixed $slot
+ * @param mixed $course
+ * @param mixed $teacher_id
+ * @param mixed $teacherf
+ * @param mixed $teacherl
+ * @param mixed $randomIndex
+ * @param mixed $clashchecker
+ * @return void
+ */
+function doScheduleWend(
+    $conn,
+    $courseid,
+    $currentDayID,
+    $currentRoomID,
+    $slot,
+    $course,
+    $teacher_id,
+    $teacherf,
+    $teacherl,
+    $sem
 
-    ?>
+) {
+    $num = findMaxScheduleWend($conn);
 
-    <table cellpadding="0" cellspacing="0" border="1" class="table table-striped table-bordered">
-        <thead>
-            <tr>
-
-                <th>Day</th>
-                <th>8:00am - 9:30am</th>
-                <th>9:30am - 11:00am</th>
-                <th>11:00am - 12:30pm</th>
-                <th>12:30pm - 2:00pm</th>
-                <th>2:00pm - 3:30pm</th>
-                <th>3:30pm - 5:00pm</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- end script -->
-
-            <?php
-
-            $findDays = mysqli_query($conn, "SELECT  distinct dayid from  schedule where lectid='$lect'");
-            if (mysqli_num_rows($findDays) > 0) {
-                while ($day = mysqli_fetch_assoc($findDays)) {
-                    $dayID = $day['dayid'];
-                    $findday = mysqli_query($conn, "SELECT day FROM week_days WHERE id='$dayID'");
-                    $theDay = mysqli_fetch_assoc($findday);
-                    $dayName = $theDay['day'];
-                    echo "<tr>";
-                    echo "<td>{$dayName}</td>";
-                    $findslots = mysqli_query($conn, "SELECT roomid, timeslot, allocatedcourse FROM schedule WHERE 
-dayid='$dayID' AND lectid='$lect' ORDER BY timeslot ASC");
-                    $slots = array(); // initialize an array to store all the slots for the current day
-                    while ($row = mysqli_fetch_assoc($findslots)) {
-                        $slots[] = $row; // add the current row to the $slots array
-                    }
-                    for ($i = 0; $i < 6; $i++) {
-                        $slot_found = false; // initialize a flag to check if a slot was found for the current time slot
-                        foreach ($slots as $slot) {
-                            if ($slot['timeslot'] == $i) {
-                                $room = $slot['roomid'];
-                                $findroom = mysqli_query($conn, "SELECT room FROM rooms WHERE id='$room'");
-                                $theRoom = mysqli_fetch_assoc($findroom);
-                                $roomName = $theRoom['room'];
-                                echo "<td> 
-{$slot['allocatedcourse']} <br>({$roomName})
-</td> ";
-                                $slot_found = true; // set the flag to true
-                                break; // exit the foreach loop, since we found a slot for the current time slot
-                            }
-                        }
-                        if (!$slot_found) {
-                            echo "<td valign='middle' style='text-align:center; verticle:middle'>-</td>"; // if no slot was found, display a dash (-)
-                        }
-                    } //end for loop
-                    echo "</tr>";
-                } //end while days
-            } //end if days >0
-            else { //no days found
-                echo "<tr><td colspan='7'>No timetable was found for lecturer</td></tr>";
-            } //close no days else
-            echo "</tbody></table>";
+    $check = mysqli_query($conn, "SELECT * FROM checker_wend WHERE courseid='$courseid'");
+    if (mysqli_num_rows($check) == 0) { // picked course is not scheduled give it the first slot
+        $num = $num + 1;
+        mysqli_query($conn, "INSERT INTO schedule_wend(scheduleid,dayid,roomid,timeslot,allocatedcourse,
+lectid,lecturerfname,lecturerlname,subject_id,sem)
+values('$num','$currentDayID','$currentRoomID',$slot,'$course','$teacher_id','$teacherf','$teacherl','$courseid','$sem')") or
+            die(mysqli_error($conn));
+        mysqli_query($conn, "INSERT INTO checker_wend(courseid,slots,sem)
+values('$courseid',1,'$sem')") or die(mysqli_error($conn));
+        mysqli_query($conn, "UPDATE wendcourses SET allocated=allocated+1 WHERE subject_id='$courseid' and sem='$sem' ");
+        //add the course to added course array
+    } // end course not scheduled
+    else { //course already scheduled atleast once
+        $checksessions = mysqli_fetch_assoc($check);
+        $checkSlots = $checksessions['slots']; //find number of slots
+        if ($checkSlots == 1) {
+            $check2 = mysqli_query($conn, "SELECT * FROM schedule_wend WHERE dayid='$currentDayID' and timeslot='$slot' AND
+        roomid='$currentRoomID' AND sem='$sem'") or die(mysqli_error($conn));
+            if (mysqli_num_rows($check2) > 0) { //picked slot already available
+                mysqli_query($conn, "UPDATE schedule_wend  SET allocatedcourse='$course', lectid='$teacher_id',lecturerfname='$teacherf',lecturerlname='$teacherl' WHERE dayid='$currentDayID' and timeslot='$slot' AND
+        roomid='$currentRoomID' and sem='$sem'") or
+                    die(mysqli_error($conn));
+                mysqli_query($conn, "UPDATE checker_wend SET slots=slots+1 WHERE courseid='$courseid'AND sem='$sem' ");
+                mysqli_query($conn, "UPDATE wendcourses SET allocated=allocated+1,sem='$sem' WHERE subject_id='$courseid' ");
+            } else {
+                //give the course a second slot and update checker
+                $num = $num + 1;
+                mysqli_query($conn, "INSERT INTO
+schedule_wend(scheduleid,dayid,roomid,timeslot,allocatedcourse,lectid,lecturerfname,lecturerlname,subject_id,sem)
+values('$num','$currentDayID','$currentRoomID',$slot,'$course','$teacher_id','$teacherf','$teacherl','$courseid','$sem')") or
+                    die(mysqli_error($conn));
+                mysqli_query($conn, "UPDATE checker_wend SET slots=slots+1  WHERE courseid='$courseid' AND sem='$sem' ");
+                mysqli_query($conn, "UPDATE wendcourses SET allocated=allocated+1 WHERE subject_id='$courseid' ");
+            }
+        } //end give it second slot
+    } //end course already scheduled atleast once
 }
-
-
-//General timetable
-function displayTT($conn)
-{
-    $days = mysqli_query($conn, "SELECT * FROM week_days") or die(mysqli_error($conn));
-    $rooms = mysqli_query($conn, "SELECT * FROM rooms") or die(mysqli_error($conn));
-
-    while ($day = mysqli_fetch_assoc($days)) {
-        $dayid = $day['id'];
-        ?>
-                <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Day</th>
-                            <th>Room</th>
-                            <th>8:00am - 9:30am</th>
-                            <th>9:30am - 11:00am</th>
-                            <th>11:00am - 12:30pm</th>
-                            <th>12:30pm - 2:00pm</th>
-                            <th>2:00pm - 3:30pm</th>
-                            <th>3:30pm - 5:00pm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        mysqli_data_seek($rooms, 0);
-
-                        while ($room_rows = mysqli_fetch_assoc($rooms)) {
-                            $currentRoom = $room_rows['room'];
-                            $currentRoomID = $room_rows['id'];
-                            ?>
-                            <tr>
-                                <td>
-                                    <?php echo $day['day']; ?>
-                                </td>
-                                <td>
-                                    <?php echo $currentRoom; ?>
-                                </td>
-                                <?php
-                                $schedule = mysqli_query($conn, "SELECT * FROM schedule WHERE roomid='$currentRoomID' AND dayid='$dayid' ORDER BY timeslot ASC") or die(mysqli_error($conn));
-                                while ($schedule_row = mysqli_fetch_assoc($schedule)) {
-                                    $data = $schedule_row['allocatedcourse'];
-                                    $lectl = $schedule_row['lecturerlname'];
-                                    $lectf = $schedule_row['lecturerfname'];
-                                    $cid = $schedule_row['scheduleid'];
-                                    if ($data == null) {
-
-                                        echo "<td style='text-align:center;vertical-align:middle;''>-</td>";
-                                    } else {
-                                        echo "<td>$data<br><font color='#52595D'>($lectl &nbsp;{$lectf})
-                                        <a title='remove' onclick='doDelete(" . json_encode($data) . ",$cid)'><i class='fas fa-remove fa-sm'></i></a></li>
-                                        </font></td>";
-                                    }
-
-                                }
-                                ?>
-                            </tr>
-                            <?php
-                        }
-                        ?>
-                    </tbody>
-                </table>
-                <?php
-    }
-}
+//end do seschedulewend==========================================
 
 function get_holidays($year)
 {
@@ -530,94 +517,339 @@ function getScheduleSup($start_date, $end_date, $teacherCourses, $num_days, $con
 //end supp
 function displayTTExport($conn)
 {
-    $days = mysqli_query($conn, "SELECT * FROM week_days") or die(mysqli_error($conn));
-    $rooms = mysqli_query($conn, "SELECT * FROM rooms") or die(mysqli_error($conn));
+    $sem = showCurrentSem($conn);
+    $semschedule = mysqli_query($conn, "SELECT * FROM schedule WHERE sem='$sem'") or die(mysqli_error($conn));
+    if (mysqli_num_rows($semschedule) > 0) {
+        $days = mysqli_query($conn, "SELECT * FROM week_days") or die(mysqli_error($conn));
+        $rooms = mysqli_query($conn, "SELECT * FROM rooms") or die(mysqli_error($conn));
 
-    while ($day = mysqli_fetch_assoc($days)) {
-        $dayid = $day['id'];
-        ?>
-                <table cellpadding="10" cellspacing="0" border="1" width="100%">
-                    <thead>
-                        <tr bgcolor="DDDDDD" height="30">
+        while ($day = mysqli_fetch_assoc($days)) {
+            $dayid = $day['id'];
+            ?>
+            <table cellpadding="10" cellspacing="0" border="1">
+                <thead>
+                    <tr bgcolor="DDDDDD" height="30">
 
-                            <th>Day</th>
-                            <th>Room</th>
-                            <th>8:00am - 9:30am</th>
-                            <th>9:30am - 11:00am</th>
-                            <th>11:00am - 12:30pm</th>
-                            <th>12:30pm - 2:00pm</th>
-                            <th>2:00pm - 3:30pm</th>
-                            <th>3:30pm - 5:00pm</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        mysqli_data_seek($rooms, 0);
+                        <th>Day</th>
+                        <th>Room</th>
+                        <th>8:00am - 9:30am</th>
+                        <th>9:30am - 11:00am</th>
+                        <th>11:00am - 12:30pm</th>
+                        <th>12:30pm - 2:00pm</th>
+                        <th>2:00pm - 3:30pm</th>
+                        <th>3:30pm - 5:00pm</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    mysqli_data_seek($rooms, 0);
 
-                        $j = 1;
-                        while ($room_rows = mysqli_fetch_assoc($rooms)) {
-                            $currentRoom = $room_rows['room'];
-                            $currentRoomID = $room_rows['id'];
-                            $roomLocation = $room_rows['location'];
-                            ?>
-                            <tr <?php if ($j % 2 == 0) { ?> bgcolor="#DDDDDD" <?php } else { ?> bgcolor="#FFFFFF" <?php } ?>>
-                                <td>
-                                    <?php echo $day['day']; ?>
-                                </td>
-                                <td>
-                                    <?php echo "$currentRoom<br>(<font color='#61C2A2'>$roomLocation</font>)"; ?>
-                                </td>
-                                <?php
-                                $schedule = mysqli_query($conn, "SELECT * FROM schedule WHERE roomid='$currentRoomID' AND dayid='$dayid' ORDER BY timeslot ASC") or die(mysqli_error($conn));
-                                while ($schedule_row = mysqli_fetch_assoc($schedule)) {
-                                    $data = $schedule_row['allocatedcourse'];
-                                    $lectl = $schedule_row['lecturerlname'];
-                                    $lectf = $schedule_row['lecturerfname'];
-                                    if ($data == null) {
-
-                                        echo "<td style='text-align:center;vertical-align:middle;''>-</td>";
-                                    } else {
-                                        ?>
-                                        <td>
-                                            <?php echo $data ?><br>
-                                            <font color='#52595D'>
-                                                <?php echo "($lectl &nbsp;{$lectf})" ?>
-                                            </font>
-                                            <br>
-                                            <?php
-                                            $coid = mysqli_query($conn, "SELECT subject_id FROM subject WHERE subject_title='$data'");
-                                            $subid = mysqli_fetch_assoc($coid);
-                                            $subject_id = $subid['subject_id'];
-                                            $classes = mysqli_query($conn, "SELECT * from course_class INNER JOIN classes ON course_class.classid=
-                                 classes.classid WHERE course_class.courseid='$subject_id'");
-                                            $i = 1;
-                                            ?>
-
-                                            <?php
-                                            while ($r = mysqli_fetch_assoc($classes)) {
-                                                if ($i == 3) {
-                                                    echo "<font color='#61C2A2'>{$r['classname']}</font><br>";
-                                                    $i = 0;
-                                                } else
-                                                    echo "<font color='#61C2A2'>{$r['classname']}</font>,";
-                                                $i++;
-                                            }
-                                            ?>
-                                        </td>
-                                        <?php
-                                    }
-
-                                }
-                                ?>
-                            </tr>
-                            <?php
-                            $j++;
-                        }
+                    $j = 1;
+                    while ($room_rows = mysqli_fetch_assoc($rooms)) {
+                        $currentRoom = $room_rows['room'];
+                        $currentRoomID = $room_rows['id'];
+                        $roomLocation = $room_rows['location'];
                         ?>
-                    </tbody>
-                </table>
-                <?php
+                        <tr <?php if ($j % 2 == 0) { ?> bgcolor="#DDDDDD" <?php } else { ?> bgcolor="#FFFFFF" <?php } ?>>
+                            <td>
+                                <?php echo $day['day']; ?>
+                            </td>
+                            <td>
+                                <?php echo "$currentRoom<br>(<font color='#61C2A2'>$roomLocation</font>)"; ?>
+                            </td>
+                            <?php
+                            $schedule = mysqli_query($conn, "SELECT * FROM schedule WHERE roomid='$currentRoomID' AND dayid='$dayid' AND sem='$sem' ORDER BY timeslot ASC") or die(mysqli_error($conn));
+                            while ($schedule_row = mysqli_fetch_assoc($schedule)) {
+                                $data = $schedule_row['allocatedcourse'];
+                                $lectl = $schedule_row['lecturerlname'];
+                                $lectf = $schedule_row['lecturerfname'];
+                                if ($data == null) {
+
+                                    echo "<td style='text-align:center;vertical-align:middle;''>-</td>";
+                                } else {
+                                    ?>
+                                    <td>
+                                        <?php echo $data ?><br>
+                                        <font color='#52595D'>
+                                            <?php echo "($lectl &nbsp;{$lectf})" ?>
+                                        </font>
+                                        <br>
+                                        <?php
+                                        $coid = mysqli_query($conn, "SELECT subject_id FROM subject WHERE subject_title='$data'");
+                                        $subid = mysqli_fetch_assoc($coid);
+                                        $subject_id = $subid['subject_id'];
+                                        $classes = mysqli_query($conn, "SELECT * from course_class INNER JOIN classes ON course_class.classid=
+                                 classes.classid WHERE course_class.courseid='$subject_id'");
+                                        $i = 1;
+                                        ?>
+
+                                        <?php
+                                        while ($r = mysqli_fetch_assoc($classes)) {
+                                            if ($i == 3) {
+                                                echo "<font color='#61C2A2'>{$r['classname']}</font><br>";
+                                                $i = 0;
+                                            } else
+                                                echo "<font color='#61C2A2'>{$r['classname']}</font>,";
+                                            $i++;
+                                        }
+                                        ?>
+                                    </td>
+                                    <?php
+                                }
+
+                            }
+                            ?>
+                        </tr>
+                        <?php
+                        $j++;
+                    }
+                    ?>
+                </tbody>
+            </table>
+            <?php
+        }
+    } else {
+        ?>
+        <script type="text/JavaScript">
+                                                                                                                                                                                                                                                                                                                                                                            alert("No timetable for this semester");
+                                                                                                                                                                                                                                                                                                                                                                            </script>
+        <?php
+    }
+}
+function displayTTExportWend($conn)
+{
+    $sem = showCurrentSem($conn);
+    $semschedule = mysqli_query($conn, "SELECT * FROM schedule_wend WHERE sem='$sem'") or die(mysqli_error($conn));
+    if (mysqli_num_rows($semschedule) > 0) {
+        $days = mysqli_query($conn, "SELECT * FROM week_ends") or die(mysqli_error($conn));
+        $rooms = mysqli_query($conn, "SELECT * FROM rooms INNER JOIN wendvenues ON rooms.id=wendvenues.rid") or die(mysqli_error($conn));
+
+        while ($day = mysqli_fetch_assoc($days)) {
+            $dayid = $day['id'];
+            ?>
+            <table cellpadding="10" cellspacing="0" border="1" width="80%">
+                <thead>
+                    <tr bgcolor="DDDDDD" height="30">
+
+                        <th>Day</th>
+                        <th>Room</th>
+                        <th>8:00am - 9:30am</th>
+                        <th>9:30am - 11:00am</th>
+                        <th>11:00am - 12:30pm</th>
+                        <th>12:30pm - 2:00pm</th>
+                        <th>2:00pm - 3:30pm</th>
+                        <th>3:30pm - 5:00pm</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    mysqli_data_seek($rooms, 0);
+
+                    $j = 1;
+                    while ($room_rows = mysqli_fetch_assoc($rooms)) {
+                        $currentRoom = $room_rows['room'];
+                        $currentRoomID = $room_rows['id'];
+                        $roomLocation = $room_rows['location'];
+                        ?>
+                        <tr <?php if ($j % 2 == 0) { ?> bgcolor="#DDDDDD" <?php } else { ?> bgcolor="#FFFFFF" <?php } ?>>
+                            <td>
+                                <?php echo $day['day']; ?>
+                            </td>
+                            <td>
+                                <?php echo "$currentRoom<br>(<font color='#61C2A2'>$roomLocation</font>)"; ?>
+                            </td>
+                            <?php
+                            $schedule = mysqli_query($conn, "SELECT * FROM schedule_wend WHERE roomid='$currentRoomID' AND dayid='$dayid' AND sem='$sem' ORDER BY timeslot ASC") or die(mysqli_error($conn));
+                            while ($schedule_row = mysqli_fetch_assoc($schedule)) {
+                                $data = $schedule_row['allocatedcourse'];
+                                $lectl = $schedule_row['lecturerlname'];
+                                $lectf = $schedule_row['lecturerfname'];
+                                if ($data == null) {
+
+                                    echo "<td style='text-align:center;vertical-align:middle;''>-</td>";
+                                } else {
+                                    ?>
+                                    <td>
+                                        <?php echo $data ?><br>
+                                        <font color='#52595D'>
+                                            <?php echo "($lectl &nbsp;{$lectf})" ?>
+                                        </font>
+                                        <br>
+                                        <?php
+                                        $coid = mysqli_query($conn, "SELECT subject_id FROM wendcourses WHERE subject_title='$data'");
+                                        $subid = mysqli_fetch_assoc($coid);
+                                        $subject_id = $subid['subject_id'];
+                                        $classes = mysqli_query($conn, "SELECT * from course_class INNER JOIN classes ON course_class.classid=
+                                 classes.classid WHERE course_class.courseid='$subject_id'");
+                                        $i = 1;
+                                        ?>
+
+                                        <?php
+                                        while ($r = mysqli_fetch_assoc($classes)) {
+                                            if ($i == 3) {
+                                                echo "<font color='#61C2A2'>{$r['classname']}</font><br>";
+                                                $i = 0;
+                                            } else
+                                                echo "<font color='#61C2A2'>{$r['classname']}</font>,";
+                                            $i++;
+                                        }
+                                        ?>
+                                    </td>
+                                    <?php
+                                }
+
+                            }
+                            ?>
+                        </tr>
+                        <?php
+                        $j++;
+                    }
+                    ?>
+                </tbody>
+            </table>
+            <?php
+        }
+    } else {
+        echo ';
+        <script type="text/JavaScript">
+                alert("No timetable for this semester")                                                                                                                                                                                                                                                                                                        </script>
+        ';
     }
 }
 
+function redoAllocateExams($conn, $sessionsPerCourse, $teacherCourses, $sem)
+{
+    $find_weeks = mysqli_query($conn, "SELECT distinct exam_week FROM examschedule WHERE sem='$sem'");
+    while ($wrow = mysqli_fetch_assoc($find_weeks)) {
+        $eWeek = $wrow['exam_week'];
+        $find_date = mysqli_query($conn, "SELECT distinct edate FROM examschedule WHERE exam_week='$eWeek' AND sem='$sem'");
+        mysqli_data_seek($find_date, 0);
+        while ($dates = mysqli_fetch_assoc($find_date)) { //dates
+            $sesions = mysqli_query($conn, "Select * FROM examsessions");
+            $clashchecker = array();
+            //mysqli_data_seek($sesions, 0);
+            $roomsArray = [];
+            while ($sess = mysqli_fetch_assoc($sesions)) {
+                //******************************************************* */
+                $sessionid = $sess['id'];
+                $eDate = $dates['edate'];
+                $roomQuery = "SELECT roomid,rspace FROM examschedule  WHERE edate='$eDate'  AND exam_week='$eWeek' AND sessionid='$sessionid'
+                            AND rspace > 0 AND sem='$sem'";
+                $rooms = $conn->query($roomQuery);
+                while ($room = $rooms->fetch_assoc()) {
+                    $roomsArray[] = $room;
+                }
+                // if ($rooms->num_rows > 0) { //open if there are rooms assigned
+                for ($j = 1; $j <= $sessionsPerCourse; $j++) { //possible number of courses to insert
+                    if (count($teacherCourses) > 0) { //check if array is valid
+                        $randomIndex = array_rand($teacherCourses);
+                        $randomCourse = $teacherCourses[$randomIndex];
+                        $course = $randomCourse['subject_title'];
+                        $courseid = $randomCourse['subject_id'];
+                        $noOfStudents = $randomCourse['students'];
+
+                        $getSchedule = mysqli_query($conn, "SELECT * FROM examschedule WHERE edate='$eDate' AND sessionid='$sessionid'
+                        AND exam_week='$eWeek' AND sem='$sem'");
+                        while ($row = mysqli_fetch_assoc($getSchedule)) {
+                            $clashchecker[] = $row['courseid'];
+                        }
+                        //*************************************************************************** */
+
+                        $randomRoomIndex = array_rand($roomsArray);
+                        $randomRoom = $roomsArray[$randomRoomIndex];
+                        $roomCapacity = $randomRoom['rspace'];
+                        $roomId = $randomRoom['roomid'];
+                        if ($roomCapacity >= $noOfStudents) { // open capacity ok
+                            //************************************************************************* */
+                            $foundClash = checkClassClashExam($clashchecker, $conn, $courseid, $sem);
+                            if ($foundClash == false) { //if no clash will occour
+                                //echo "<li> $course</li>";
+                                mysqli_query($conn, "INSERT INTO examschedule (edate,courseid,course,sessionid,exam_week,roomid,round,sem) 
+            VALUES('$eDate','$courseid','$course','$sessionid','$eWeek','$roomId',2,'$sem')");
+                                $newCapacity = $roomCapacity - $noOfStudents;
+                                $roomsArray[$randomRoomIndex]['rspace'] = $newCapacity;
+                                mysqli_query($conn, "UPDATE examschedule SET rspace='$newCapacity' WHERE edate='$eDate' AND sessionid='$sessionid' AND 
+                                                exam_week='$eWeek' AND roomid='$roomId' AND sem='$sem'") or die(mysqli_error($conn));
+                                $scheduledCourses = ["courseId" => $courseid, "sem" => $sem];
+                                $clashchecker[] = $scheduledCourses;
+                                unset($teacherCourses[$randomIndex]);
+                                $teacherCourses = array_values($teacherCourses);
+
+                            } //close if no clash
+                        } //close if capacity ok
+                    } //close array is valid
+                } //close possible number of courses
+                //} //close if rooms are assigned
+            } //close while session
+        } //end cAQurrent date
+    } //end weeks
+
+    return $teacherCourses;
+}
+function reallocateCoursesSup($conn, $sessionsPerCourse, $teacherCourses, $sem)
+{
+    $find_weeks = mysqli_query($conn, "SELECT distinct exam_week FROM examschedulesup");
+    while ($wrow = mysqli_fetch_assoc($find_weeks)) {
+        $eWeek = $wrow['exam_week'];
+        $find_date = mysqli_query($conn, "SELECT distinct edate FROM examschedulesup WHERE exam_week='$eWeek' AND sem='$sem'");
+        mysqli_data_seek($find_date, 0);
+        while ($dates = mysqli_fetch_assoc($find_date)) { //dates
+            $sesions = mysqli_query($conn, "Select * FROM examsessionssup");
+            $clashchecker = array();
+            //mysqli_data_seek($sesions, 0);
+
+            while ($sess = mysqli_fetch_assoc($sesions)) {
+                //******************************************************* */
+                $roomsArray = [];
+                $sessionid = $sess['id'];
+                $eDate = $dates['edate'];
+                $roomQuery = mysqli_query($conn, "SELECT roomid,rspace FROM examschedulesup  WHERE edate='$eDate'  AND exam_week='$eWeek' AND sessionid='$sessionid'
+                            AND rspace > 0 AND sem='$sem'");
+                while ($room = mysqli_fetch_assoc($roomQuery)) {
+                    $roomsArray[] = $room;
+                }
+                for ($j = 1; $j <= $sessionsPerCourse; $j++) { //possible number of courses to insert
+                    if (count($teacherCourses) > 0) { //check if array is valid
+                        $randomIndex = array_rand($teacherCourses);
+                        $randomCourse = $teacherCourses[$randomIndex];
+                        $course = $randomCourse['subject_title'];
+                        $courseid = $randomCourse['subject_id'];
+                        $noOfStudents = $randomCourse['pop'];
+                        $sessionid = $sess['id'];
+                        $eDate = $dates['edate'];
+                        $getSchedule = mysqli_query($conn, "SELECT * FROM examschedulesup WHERE edate='$eDate' AND sessionid='$sessionid'
+                        AND exam_week='$eWeek' AND sem='$sem'");
+                        while ($row = mysqli_fetch_assoc($getSchedule)) {
+                            $clashchecker[] = $row['courseid'];
+                        }
+                        //room issue
+                        $randomRoomIndex = array_rand($roomsArray);
+                        $randomRoom = $roomsArray[$randomRoomIndex];
+                        $roomCapacity = $randomRoom['rspace'];
+                        $roomId = $randomRoom['roomid'];
+                        if ($roomCapacity >= $noOfStudents) { // open capacity ok
+
+                            //room issue
+                            $foundClash = checkClassClashExam($clashchecker, $conn, $courseid, $sem);
+                            if ($foundClash == false) { //if no clash will occour
+                                //echo "<li> $course</li>";
+                                mysqli_query($conn, "INSERT INTO examschedulesup (edate,courseid,course,sessionid,exam_week,roomid,round,sem) 
+            VALUES('$eDate','$courseid','$course','$sessionid','$eWeek','$roomId',2,'$sem')");
+                                $newCapacity = $roomCapacity - $noOfStudents;
+                                $roomsArray[$randomRoomIndex]['rspace'] = $newCapacity;
+                                mysqli_query($conn, "UPDATE examschedulesup SET rspace='$newCapacity' WHERE edate='$eDate' AND sessionid='$sessionid' AND 
+                                                exam_week='$eWeek' AND roomid='$roomId' AND sem='$sem'") or die(mysqli_error($conn));
+
+                                $clashchecker[] = $courseid;
+                                unset($teacherCourses[$randomIndex]);
+                                $teacherCourses = array_values($teacherCourses);
+                            } //close if no clash
+                        } //close if capacity ok
+                    } //close possible number of courses to add
+                } //************************************************************ */
+            } //close while session
+        } //end current date
+    } //end weeks
+    return $teacherCourses;
+}
 ?>

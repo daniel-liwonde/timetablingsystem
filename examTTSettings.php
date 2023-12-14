@@ -34,16 +34,16 @@ if (isset($_GET['subid'])) {
     $done = mysqli_query($conn, "DELETE FROM examschedule WHERE scheduleid=$schedule");
     if ($done) { //done
         if (mysqli_affected_rows($conn) > 0) {
-            mysqli_query($conn,"UPDATE subject SET allocatedExam=0 WHERE subject_id='$coid'") or die(mysqli_error($conn));
+            mysqli_query($conn, "UPDATE subject SET allocatedExam=0 WHERE subject_id='$coid'") or die(mysqli_error($conn));
             $msgP = "<div class='alert alert-success'><i class='icon-check icon-large'></i> &nbsp;  schedule removed successifully!</div>";
         }
     } //close done
 }
 if (isset($_POST['saveRoom'])) {
-    $roomName = $_POST['roomname'];
-    $duproom = mysqli_query($conn, "SELECT room FROM examvenues WHERE room ='$roomName'");
+    $roomName = $_POST['roomid'];
+    $duproom = mysqli_query($conn, "SELECT rid FROM examvenues WHERE rid ='$roomName'");
     if (mysqli_num_rows($duproom) == 0) {
-        mysqli_query($conn, "INSERT INTO examvenues(room)
+        mysqli_query($conn, "INSERT INTO examvenues(rid)
 		values('$roomName')") or die(mysqli_error($conn));
 
         $msg = "<span class='alert alert-success'><i class='fas fa-check-circle'></i> &nbsp;Room {$roomName} is added successifully</span>";
@@ -56,7 +56,7 @@ if (isset($_POST['addClass'])) {
     $sessionName = $_POST['sessionName'];
     $fro = $_POST['fro'];
     $to = $_POST['to'];
-   
+
     $dupclass = mysqli_query($conn, "SELECT  session_name  FROM examsessions WHERE session_name='$sessionName' and session_from='$fro'
     and session_to='$to'");
     if (mysqli_num_rows($dupclass) == 0) {
@@ -78,6 +78,7 @@ if (isset($_POST['addClass'])) {
             <div class="container">
 
                 <div class="row-fluid">
+                    <!--
                     <div class="hero-unit-3" style="width:18.5%">
                         <div class="alert-index alert-success">
                             <i class="icon-calendar icon-large"></i>
@@ -89,9 +90,10 @@ if (isset($_POST['addClass'])) {
                         </div>
                     </div>
                     <div class="hero-unit-1" style="width:20%">
-                        <?php require_once "ttMenu.php"; ?>
+                        <?php //require_once "ttMenu.php"; ?>
                     </div>
-                    <div class="span12" style="border:1px; width:85%; margin-left:22%; margin-top:-455px; ">
+-->
+                    <div class="span12" style="border:1px; width:107%;; margin-top:20px; ">
                         <?php require_once "ttopMenu.php"; ?>
                         <br><br>
                         <div class="hero-unit-3" style="margin-top:10px"> <!--wrapper -->
@@ -110,7 +112,7 @@ if (isset($_POST['addClass'])) {
                                     <div class="control-group" style="float:left; padding-right:5px">
                                         <div class="controls">
 
-                                            <select name="roomname" required>
+                                            <select name="roomid" required>
                                                 <option value="">Select room</option>
                                                 <?php
                                                 $sql = "SELECT * from rooms";
@@ -120,7 +122,8 @@ if (isset($_POST['addClass'])) {
                                                 
                                                 while ($rows = mysqli_fetch_assoc($find)) {
                                                     ?>
-                                                    <option value="<?php echo $rows['room'] ?>"><?php echo $rows['room'] ."(".$rows['location']."(".$rows['capacity'].")".")"?>
+                                                    <option value="<?php echo $rows['id'] ?>">
+                                                        <?php echo $rows['room'] . "(" . $rows['location'] . "(" . $rows['capacity'] . ")" . ")" ?>
                                                     </option>
                                                     <?php
                                                 }
@@ -133,7 +136,7 @@ if (isset($_POST['addClass'])) {
                                     <div class="control-group">
                                         <div class="controls">
                                             <button type="submit" name="saveRoom" role="button" class="btn btn-info">
-                                                <i class="icon-plus-sign icon-large"></i>&nbsp;&nbsp;Add</button>
+                                                <i class="icon-plus-sign icon-large"></i>&nbsp;&nbsp;Add Room</button>
                                         </div>
                                     </div>
                                 </form>
@@ -162,8 +165,8 @@ if (isset($_POST['addClass'])) {
                                     <thead>
                                         <tr>
                                             <th>Room Name</th>
-                                             <th>Campus</th>
-                                             <th>Capacity</th>
+                                            <th>Campus</th>
+                                            <th>Capacity</th>
                                             <th>Action</th>
 
 
@@ -173,7 +176,7 @@ if (isset($_POST['addClass'])) {
 
 
                                         <?php
-                                        $sql = "SELECT * from examvenues INNER JOIN rooms ON examvenues.room=rooms.room";
+                                        $sql = "SELECT * from examvenues INNER JOIN rooms ON examvenues.rid=rooms.id";
                                         $find = mysqli_query($conn, $sql);
 
                                         //f(mysql_affected_rows($find)>0){
@@ -186,13 +189,13 @@ if (isset($_POST['addClass'])) {
                                                 </td>
                                                 <td>
                                                     <?php echo $rows['capacity'] ?>
-                                                    </td>
-                                                     <td>
+                                                </td>
+                                                <td>
                                                     <?php echo $rows['location'] ?>
-                                                    </td>
-                                                    <td>
-                                                        <a class="btn btn-danger"
-                                                            href="examTTSettings.php?id=<?php echo $rows['rid'] ?>">
+                                                </td>
+                                                <td>
+                                                    <a class="btn btn-danger"
+                                                        href="examTTSettings.php?id=<?php echo $rows['rid'] ?>&menu=3">
                                                         <i class="fas fa-remove"></i>
                                                     </a>
                                                 </td>
@@ -247,11 +250,11 @@ if (isset($_POST['addClass'])) {
                                                 <option>4:30 pm</option>
                                                 <option>5:00 pm</option>
                                                 <option>5:30 pm</option>
-                                                 <option>6:00 pm</option>
-                                                  <option>6:30 pm</option>
-                                                   <option>7:00 pm</option>
-                                                    <option>7:30 pm</option>
-                                                     <option>8:00 pm</option>
+                                                <option>6:00 pm</option>
+                                                <option>6:30 pm</option>
+                                                <option>7:00 pm</option>
+                                                <option>7:30 pm</option>
+                                                <option>8:00 pm</option>
 
                                             </select>
                                         </div>
@@ -282,11 +285,11 @@ if (isset($_POST['addClass'])) {
                                                 <option>4:30 pm</option>
                                                 <option>5:00 pm</option>
                                                 <option>5:30 pm</option>
-                                                 <option>6:00 pm</option>
-                                                  <option>6:30 pm</option>
-                                                   <option>7:00 pm</option>
-                                                    <option>7:30 pm</option>
-                                                     <option>8:00 pm</option>
+                                                <option>6:00 pm</option>
+                                                <option>6:30 pm</option>
+                                                <option>7:00 pm</option>
+                                                <option>7:30 pm</option>
+                                                <option>8:00 pm</option>
 
                                             </select>
                                         </div>
@@ -351,10 +354,10 @@ if (isset($_POST['addClass'])) {
                                                 <td>
                                                     <?php echo $rows['session_to'] ?>
                                                 </td>
-                                    
+
                                                 <td><a onclick="return confirm('The session will be deleted. Do you want to proceed?')"
                                                         class="btn btn-danger"
-                                                        href="examTTSettings.php?delid=<?php echo $eclass_id ?>"><i
+                                                        href="examTTSettings.php?delid=<?php echo $eclass_id ?>&menu=3"><i
                                                             class="icon icon-trash icon-large"></i></a></td>
 
 
@@ -372,11 +375,13 @@ if (isset($_POST['addClass'])) {
 
                                 <div class="alert alert-info">
                                     <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                    <strong><i class="fa-list-check icon-large"></i>&nbsp;Set time exam timetable
+                                    <strong><i class="fa-list-check icon-large"></i>&nbsp;Set exam timetable
                                         Preferences</strong>
-                                        <diV class="alert alert-danger"><span class="text-warning"><b>PLEASE TAKE NOTE:</b></span><br>
-                                        Make sure that your schedule is within the intended examination timetable period. The system will not check 
-                                        against wrong schedules made outside  the intended exam period!
+                                    <diV class="alert alert-danger"><span class="text-warning"><b>PLEASE TAKE
+                                                NOTE:</b></span><br>
+                                        Make sure that your schedule is within the intended examination timetable
+                                        period. The system will not check
+                                        against wrong schedules made outside the intended exam period!
                                     </diV>
 
                                 </div>
@@ -397,7 +402,9 @@ if (isset($_POST['addClass'])) {
                                             
                                             while ($rows = mysqli_fetch_assoc($find)) {
                                                 ?>
-                                                <option value="<?php echo $rows['subject_id'] ?>"><?php echo $rows['subject_title'] ?></option>
+                                                <option value="<?php echo $rows['subject_id'] ?>">
+                                                    <?php echo $rows['subject_title'] ?>
+                                                </option>
                                                 <?php
                                             }
                                             //}
@@ -406,7 +413,7 @@ if (isset($_POST['addClass'])) {
                                         </select>
                                     </div>
                                 </div>
-                            
+
                                 <div class="control-group" style="float:left; padding-right:5px">
 
                                     <div class="controls">
@@ -419,7 +426,8 @@ if (isset($_POST['addClass'])) {
                                             
                                             while ($rows = mysqli_fetch_assoc($find)) {
                                                 ?>
-                                                <option value="<?php echo $rows['id'] ?>"><?php echo $rows['session_name'] ?>
+                                                <option value="<?php echo $rows['id'] ?>">
+                                                    <?php echo $rows['session_name'] ?>
                                                 </option>
                                                 <?php
                                             }
@@ -432,13 +440,13 @@ if (isset($_POST['addClass'])) {
                                 <div class="control-group" style="float:left; padding-right:5px">
 
                                     <div class="controls">
-                                        <input type="date" id="examDate"required>
+                                        <input type="date" id="examDate" required>
                                     </div>
                                 </div>
                                 <div class="control-group" style="float:left; padding-right:5px">
 
                                     <div class="controls">
-                                        <select id="week"required>
+                                        <select id="week" required>
                                             <option value=" ">Select week</option>
                                             <option value="1">WEEK 1</option>
                                             <option value="2">WEEK 2</option>
@@ -448,15 +456,35 @@ if (isset($_POST['addClass'])) {
                                         </select>
                                     </div>
                                 </div>
+                                <div class="controls">
+                                    <select id="room" required>
+                                        <option value="">Select Room</option>
+
+                                        <?php
+                                        $find = mysqli_query($conn, "SELECT * FROM examvenues INNER JOIN rooms ON  examvenues.rid=rooms.id");
+                                        //f(mysql_affected_rows($find)>0){
+                                        
+                                        while ($rows = mysqli_fetch_assoc($find)) {
+                                            ?>
+                                            <option value="<?php echo $rows['id'] ?>">
+                                                <?php echo $rows['room'] . "({$rows['capacity']})" ?>
+                                            </option>
+                                            <?php
+                                        }
+                                        //}
+                                        ?>
+
+                                    </select>
+                                </div>
                                 <div class="control-group">
                                     <div class="controls">
 
-                                        <button  type="submit" id="set" role="button" class="btn btn-info"
-                                        onclick='$("#msg").html("Please wait..."),
+                                        <button type="submit" id="set" role="button" class="btn btn-info" onclick='$("#msg").html("Please wait..."),
                                          $.getJSON("ttdoWorkExam.php", {
                                                         pcourse: $("#pcourse").val(),
                                                         psession: $("#psession").val(),
                                                         examDate: $("#examDate").val(),
+                                                        room: $("#room").val(),
                                                         week: $("#week").val()
                                                     
                                                     },
@@ -475,7 +503,7 @@ if (isset($_POST['addClass'])) {
                                                         pcourse: $("#pcourse").val(),
                                                         psession: $("#psession").val(),
                                                         examDate: $("#examDate").val()
-                                                    
+
                                                     },
                                                         function (data) {
                                                             $("#msg").html(data.res);
@@ -520,6 +548,7 @@ if (isset($_POST['addClass'])) {
                                             <th>From </th>
                                             <th>To</th>
                                             <th>Week</th>
+                                            <th>Room</th>
                                             <th>Action</th>
 
                                         </tr>
@@ -529,49 +558,54 @@ if (isset($_POST['addClass'])) {
                                         $find = mysqli_query($conn, "SELECT * FROM
                                          examschedule JOIN examsessions ON 
                                         examschedule.sessionid=examsessions.id AND examschedule.pref=1");
-                                        while ($row = mysqli_fetch_assoc($find)) 
-                                        {
+                                        while ($row = mysqli_fetch_assoc($find)) {
                                             $subname = $row['course'];
-                                             $coid = $row['courseid'];
+                                            $coid = $row['courseid'];
                                             $from = $row['session_from'];
-                                            $to= $row['session_to'];
+                                            $to = $row['session_to'];
                                             $sid = $row['scheduleid'];
+                                            $rid = $row['roomid'];
                                             $sdate = $row['edate'];
                                             $date = new DateTime($sdate);
                                             $week = $row['exam_week'];
-                                            $date= $date->format("l, j F Y");
-                                           
+                                            $date = $date->format("l, j F Y");
+                                            $findr = mysqli_query($conn, "SELECT * FROM rooms where id='$rid'");
+                                            $r = mysqli_fetch_assoc($findr);
+                                            $roomname = $r['room'];
                                             $sessionname = $row['session_name'];
-                                            
-                                                ?>
-                                                <tr>
-                                                    <td>
-                                                        <?php echo $subname ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php echo $sessionname ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php echo $date ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php echo $from ?>
 
-                                                    </td>
-                                                    <td>
-                                                        <?php echo $to ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php echo $week ?>
-                                                        </td>
-                                                        <td><a onclick="return confirm('Are you sure you want to remove this schedule?')"
-                                                                tootip="Remove" class="btn btn-danger"
-                                                                href="examTTSettings.php?subid=<?php echo $sid ?>&coid=<?php  echo $coid ?>">
-                                                            <i class="icon icon-remove icon-large"></i></a>
-                                                    </td>
-                                                </tr>
-                                                <?php
-                                            }
+                                            ?>
+                                            <tr>
+                                                <td>
+                                                    <?php echo $subname ?>
+                                                </td>
+                                                <td>
+                                                    <?php echo $sessionname ?>
+                                                </td>
+                                                <td>
+                                                    <?php echo $date ?>
+                                                </td>
+                                                <td>
+                                                    <?php echo $from ?>
+
+                                                </td>
+                                                <td>
+                                                    <?php echo $to ?>
+                                                </td>
+                                                <td>
+                                                    <?php echo $week ?>
+                                                </td>
+                                                <td>
+                                                    <?php echo $roomname ?>
+                                                </td>
+                                                <td><a onclick="return confirm('Are you sure you want to remove this schedule?')"
+                                                        tootip="Remove" class="btn btn-danger"
+                                                        href="examTTSettings.php?subid=<?php echo $sid ?>&coid=<?php echo $coid ?>&menu=3">
+                                                        <i class="icon icon-remove icon-large"></i></a>
+                                                </td>
+                                            </tr>
+                                            <?php
+                                        }
                                         ?>
                                     </tbody>
                                 </table>

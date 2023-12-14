@@ -1,7 +1,9 @@
 <?php
-
+require_once("connect.php");
+require_once("ttFunctions.php");
+$sem = showCurrentSem($conn);
 if (isset($_GET['lect'])) {
-    require_once("connect.php");
+
     $lect = $_GET['lect'];
     if ($lect == "")
         echo "<div class='alert alert-danger'>Please select a lecturer</div>";
@@ -37,7 +39,7 @@ if (isset($_GET['lect'])) {
 
                 <?php
 
-                $findDays = mysqli_query($conn, "SELECT  distinct dayid from  schedule where lectid='$lect'");
+                $findDays = mysqli_query($conn, "SELECT  distinct dayid from  schedule where lectid='$lect' AND sem='$sem'");
                 if (mysqli_num_rows($findDays) > 0) {
                     while ($day = mysqli_fetch_assoc($findDays)) {
                         $dayID = $day['dayid'];
@@ -47,7 +49,7 @@ if (isset($_GET['lect'])) {
                         echo "<tr>";
                         echo "<td>{$dayName}</td>";
                         $findslots = mysqli_query($conn, "SELECT roomid, timeslot, allocatedcourse FROM schedule WHERE 
-dayid='$dayID' AND lectid='$lect' ORDER BY timeslot ASC");
+dayid='$dayID' AND lectid='$lect' AND sem='$sem' ORDER BY timeslot ASC");
                         $slots = array(); // initialize an array to store all the slots for the current day
                         while ($row = mysqli_fetch_assoc($findslots)) {
                             $slots[] = $row; // add the current row to the $slots array
@@ -76,7 +78,7 @@ dayid='$dayID' AND lectid='$lect' ORDER BY timeslot ASC");
                     } //end while days
                 } //end if days >0
                 else { //no days found
-                    echo "<tr><td colspan='7'>No timetable was found for lecturer</td></tr>";
+                    echo "<tr><td colspan='7'>No timetable was found for lecturer in<font color='green'> $sem </font>semester</td></tr>";
                 } //close no days else
                 echo "</tbody></table>";
     }

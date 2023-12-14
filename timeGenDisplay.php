@@ -1,6 +1,7 @@
 <?php
-$year = date('Y');
-$sem = checksem();
+require_once('connect.php');
+require_once('ttFunctions.php');
+$sem = showCurrentSem($conn);
 $find_weeks = mysqli_query($conn, "SELECT distinct exam_week FROM examschedule");
 while ($wrow = mysqli_fetch_assoc($find_weeks)) {
     $eWeek = $wrow['exam_week'];
@@ -28,7 +29,7 @@ while ($wrow = mysqli_fetch_assoc($find_weeks)) {
         // $cdate = $dates['edate'];
         //$currentDate = new DateTime($cdate);
         //$currentDate = $currentDate->format("l, j F Y");
-        $find_dates = mysqli_query($conn, "SELECT distinct edate FROM examschedule WHERE exam_week='$eWeek' ORDER BY edate ASC ");
+        $find_dates = mysqli_query($conn, "SELECT distinct edate FROM examschedule WHERE exam_week='$eWeek' AND sem='$sem'ORDER BY edate ASC ");
         while ($drow = mysqli_fetch_assoc($find_dates)) {
 
             $cdate = $drow['edate'];
@@ -51,7 +52,7 @@ while ($wrow = mysqli_fetch_assoc($find_weeks)) {
                     </td>
                     <td>
                         <?php
-                        $duproom = mysqli_query($conn, "SELECT * FROM examvenues ");
+                        $duproom = mysqli_query($conn, "SELECT * FROM examvenues INNER JOIN rooms ON examvenues.rid=rooms.id");
                         while ($room = mysqli_fetch_assoc($duproom))
 
                             echo "{$room['room']}
@@ -67,20 +68,59 @@ while ($wrow = mysqli_fetch_assoc($find_weeks)) {
                         <?php echo $sFrom; ?> -
                         <?php echo $sTo; ?>
                     </td>
-                    <td>
-                        <ul>
 
+                    <td colspan="2">
+                        <table class="table table-bordered table-hover" border="1">
                             <?php
+                            $duproom = mysqli_query($conn, "SELECT DISTINCT examschedule.roomid,rooms.location,rooms.capacity, rooms.id,rooms.room from examschedule INNER JOIN rooms ON examschedule.roomid=rooms.id
+                                
+                            WHERE examschedule.edate='$cdate' AND examschedule.sessionid='$sessionid'");
+                            while ($room = mysqli_fetch_assoc($duproom)) {
+                                $roomId = $room['roomid'];
+                                ?>
 
-                            $getSchedule = mysqli_query($conn, "SELECT * FROM examschedule WHERE edate='$cdate' AND sessionid='$sessionid'
-                        AND exam_week='$eWeek' ");
-                            while ($row = mysqli_fetch_assoc($getSchedule)) {
-                                echo "<li>{$row['course']} </li>";
+                                <tr>
+                                    <td width="150">
+                                        <?php
+                                        echo "{$room['room']}({$room['capacity']})
+                                 (<font color='#61C2A2'>{$room['location']}</font>)<br>
+                                "
+
+
+                                            ?>
+                                    </td>
+
+                                    <td>
+                                        <ul>
+
+                                            <?php
+
+                                            $getSchedule = mysqli_query($conn, "SELECT * FROM examschedule WHERE edate='$cdate' AND sessionid='$sessionid'
+                        AND exam_week='$eWeek' AND roomid='$roomId'");
+                                            while ($row = mysqli_fetch_assoc($getSchedule)) {
+                                                $cid = $row["scheduleid"];
+                                                $course = $row['course'];
+                                                $query = mysqli_query($conn, "SELECT  students FROM subject WHERE subject_title='$course'");
+                                                $rate = mysqli_fetch_assoc($query);
+                                                $students = $rate['students'];
+                                                $round = $row['round'];
+                                                $rspace = $row['rspace'];
+                                                echo "<li>$course($students)<a title='remove' onclick='doDelete(" . json_encode($course) . ",$cid)'><i class='fas fa-remove fa-sm'></i></a></li>";
+                                            }
+
+                                            ?>
+
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <?php
                             }
                             ?>
 
-                        </ul>
+                        </table>
                     </td>
+                </tr>
+                </td>
                 </tr>
 
                 <?php

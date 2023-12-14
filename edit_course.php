@@ -97,7 +97,7 @@
                                         <?php
                                         if (isset($_POST['save'])) {
 
-
+                                            $id = $_GET['id'];
                                             $cc =clean($conn,$_POST['cc']);
                                             $cd = clean($conn,$_POST['cd']);
 											$cn = clean($conn,$_POST['cn']);
@@ -107,8 +107,9 @@
 
 
 
-                                            mysqli_query($conn,"update course set course_id='$cc',first='$f', second='$s',third='$t',department='$cd',cys='$cn' where course_id='$progid'") or die(mysqli_error($conn));                      
-                                            header("location:course.php");
+                                            mysqli_query($conn,"update course set course_id='$cc',first='$f', second='$s',third='$t',department='$cd',cys='$cn' where course_id='$progid'") or die(mysqli_error($conn));
+                                            mysqli_query($conn, "UPDATE  subject set prog='$progid' WHERE prog='$cc'") or die(mysqli_error($conn));
+                                            echo "<div class='alert alert-success'>Done</div>";
                                         }
                                         ?>
 

@@ -26,7 +26,7 @@ include('session.php');
                 <!-- .nav, .navbar-search, .navbar-form, etc -->
 
                 <ul class="nav">
-                    <li><a href="timetable.php"><i class="icon-home icon-large"></i>&nbsp;Home</a></li>
+                    <li><a href="timetable.php?menu=1"><i class="icon-home icon-large"></i>&nbsp;Home</a></li>
 
 
                     <li>

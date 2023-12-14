@@ -2,6 +2,12 @@
 require_once('header.php');
 require_once('connect.php');
 require_once('ttFunctions.php');
+$cDate = date('Y');
+$pDate=$cDate-1;
+$fDate=$cDate+1;
+$ppDate=$cDate-2;
+$ffDate=$cDate +2;
+$sem = showCurrentSem($conn);
 //cancelling a course manual schedule
 if (isset($_GET['delid'])) {
     $del = $_GET['delid'];
@@ -93,7 +99,7 @@ if (isset($_GET['delid'])) {
 }
 if (isset($_GET['tecset'])) {
     $tid = $_GET['tecset'];
-    $getStatus = mysqli_query($conn, "SELECT ext FROM subject  WHERE subject_id=$tid AND ext=1");
+    $getStatus = mysqli_query($conn, "SELECT ext FROM subject  WHERE subject_id=$tid AND ext=1 ");
     if (mysqli_num_rows($getStatus) == 0) //update to 1
         mysqli_query($conn, "UPDATE subject SET ext=1 WHERE subject_id=$tid");
     else
@@ -101,9 +107,9 @@ if (isset($_GET['tecset'])) {
 }
 if (isset($_GET['exaset'])) {
     $exad = $_GET['exaset'];
-    $getStatus = mysqli_query($conn, "SELECT exm FROM subject  WHERE subject_id=$exad AND exm=1");
-    if (mysqli_num_rows($getStatus) == 0) //update to 1
-        mysqli_query($conn, "UPDATE subject SET exm=1 WHERE subject_id=$exad");
+        $getStatus = mysqli_query($conn, "SELECT exm FROM subject  WHERE subject_id=$exad AND exm=1 ");
+        if (mysqli_num_rows($getStatus) == 0) //update to 1
+            mysqli_query($conn, "UPDATE subject SET exm=1  WHERE subject_id=$exad");
     else
         mysqli_query($conn, "UPDATE subject SET exm=0 WHERE subject_id=$exad");
 }
@@ -141,6 +147,90 @@ if (isset($_GET['exaset'])) {
                             </div>
                             <div class="hero-unit-3" style="margin-top:10px">
 
+                                <div class="alert alert-warning">
+                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                    <strong><i class="icon-home icon-large"></i>&nbsp;Set Current Semester(make sure you set the  right semester you want to operate in)</strong>
+                                </div>
+                                <form class="form-inline" method="POST">
+                                    <div class="control-group" style="float:left; padding-right:5px">
+                                        <div class="controls">
+                                            <select  name="csem" required onchange="setCurrentSem(this.value)">
+                                                <option value="">Select semester</option>
+                                                <option><?php echo $pDate. "/" .$cDate; ?></option>
+                                                <option><?php echo $cDate ."/".$fDate; ?></option>
+                                                 <option><?php echo $ppDate ."/".$pDate ?></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="control-group">
+                                        <div class="controls">
+                                            <button  style="display:none" type="submit" name="save" role="button" class="btn btn-info">
+                                                <i class="icon-plus-sign icon-large"></i>&nbsp;&nbsp;Add</button>
+                                        </div>
+                                    </div>
+                                </form><br>
+                                <!-- end slider -->
+                                 <div id="cs" style="margin-top:30px">
+                                    
+                                 </div>
+                                
+                            </div>
+                              <div class="hero-unit-3" style="margin-top:10px">
+
+                                <div class="alert alert-info">
+                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                    <strong><i class="icon-home icon-large"></i>&nbsp;Set numbers for Courses</strong>
+                                </div>
+                              
+                                    <div class="control-group" style="float:left; padding-right:5px">
+                                        <div class="controls">
+                                            <select id="dept" required onchange="getCourses(this.value)">
+                                        <option value="">Select Department</option>
+                                           <?php
+                                            $query = mysqli_query($conn,"select * from course");
+                                            while ($row = mysqli_fetch_array($query)) {
+                                                ?>
+                                                <option value="<?php echo $row['course_id'];?>"><?php echo $row['cys']; ?></option>
+                                                <?php
+                                            }
+                                            ?>
+                                                                                    
+                                          
+                                        </select>
+                                        <select id="courses">
+                                       <option value="">Select course</option>
+
+                                        </select>
+                                            
+                                             <input type="number" id="snumber" placeholder="number of students" required>
+                                        </div>
+                                    </div>
+                                    <div class="control-group" style="margin-bottom:10px">
+                                        <div class="controls">
+                                            <button class="btn btn-success" id="doSave" onclick='$("#msg").html("Please wait..."),$.getJSON("do.php",{
+                                            prog:$("#dept").val(),
+                                            course:$("#courses").val(),
+                                            number:$("#snumber").val()
+                                            },
+                                            function(data){
+                                            $("#msg").html(data.res);   
+                                            }
+                                            );'>
+                                                <i class="icon-plus-sign icon-large"></i>&nbsp;&nbsp;Add</button>
+                                        </div>
+                                    </div>
+                        
+
+                                
+                                 
+                                </div>
+                                <!-- end slider -->
+                                <div id="msg">
+                            </div>
+                            
+                            
+                            <div class="hero-unit-3" style="margin-top:10px">
+
                                 <div class="alert alert-info">
                                     <button type="button" class="close" data-dismiss="alert">&times;</button>
                                     <strong><i class="icon-home icon-large"></i>&nbsp;Add Class Rooms</strong>
@@ -162,9 +252,11 @@ if (isset($_GET['exaset'])) {
                                 </form>
 
                                 <div>
-                                    <?php if (isset($msg))
+                                    <?php if (isset($msg)) {
                                         echo $msg;
-                                    unset($msg); ?>
+                                        unset($msg);
+                                    }
+                                    ?>
                                 </div>
                                 <!-- end slider -->
                             </div>
@@ -369,23 +461,27 @@ if (isset($_GET['exaset'])) {
                                                 </td>
                                                 <td>
                                                     <?php echo $tag ?>
+                                                    <span id="s1"></span>
                                                 </td>
                                                 <td>
                                                     <?php echo $etag ?>
+                                                    <span id="s2"></span>
                                                 </td>
-                                                <td>
-                                                    <a <?php if ($t == 0) { ?> class="btn btn-success" <?php $txt = "Exclude";
+                                              <td>
+    <a <?php if ($t == 0) { ?> class="btn btn-success" <?php $txt = "Exclude";
                                                     } else { ?> class="btn btn-danger" <?php $txt = "Include";
-                                                    } ?>
-                                                        href="ttSetings.php?tecset=<?php echo $id ?>"><?php echo $txt ?></a>
+                                                    } ?> href="ttSetings.php?tecset=<?php echo $id ?>">
+                                                        <?php echo $txt ?>
+                                                    </a>
                                                 </td>
                                                 <td>
                                                     <a <?php if ($e == 0) { ?> class="btn btn-success" <?php $etxt = "Exclude";
                                                     } else { ?> class="btn btn-danger" <?php $etxt = "Include";
-                                                    } ?>
-                                                        href="ttSetings.php?exaset=<?php echo $id ?>"><?php echo $etxt ?></a>
+                                                    } ?> href="ttSetings.php?exaset=<?php echo $id ?>">
+                                                        <?php echo $etxt ?>
+                                                    </a>
                                                 </td>
-                                            </tr>
+                                                </tr>
                                             <?php
                                         }
                                         ?>

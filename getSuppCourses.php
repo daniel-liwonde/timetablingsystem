@@ -1,6 +1,8 @@
 <?php
 require_once("connect.php");
-$sql = mysqli_query($conn, "SELECT * FROM suppcourses ORDER BY id desc") or die(mysqli_error($conn));
+require_once('ttFunctions.php');
+$sem = showCurrentSem($conn);
+$sql = mysqli_query($conn, "SELECT * FROM suppcourses WHERE sem='$sem' ORDER BY id desc") or die(mysqli_error($conn));
 ?>
 <thead>
     <tr>

@@ -3,10 +3,8 @@
 <?php
 require_once('connect.php');
 require_once('session.php');
-require_once('functions.php');
-$sem = (checksem() == 1) ? "Jan-June" : "July-Dec";
-$year = date('Y');
-$prvYear = $year - 1;
+require_once("ttFunctions.php");
+$sem = showCurrentSem($conn);
 ?>
 
 <head>
@@ -15,7 +13,7 @@ $prvYear = $year - 1;
     header("Content-Type:application/msword");
     header("Expires: 0");
     header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-    header("content-disposition: attachment;filename={$year}-{$sem}_Exam_Timetable.doc");
+    header("content-disposition: attachment;filename=$sem _Exam_Timetable.doc");
     ?>
     <html>
 
@@ -24,16 +22,15 @@ $prvYear = $year - 1;
 
 <body>
     <h2>
-        <center>Malawi University of Applied Sciences</center>
+        <center>
+            <font color="blue">Malawi University of Business and Applied Sciences</font>
+        </center>
     </h2>
     <div class="alert alert-info text-center"><i class="icon-calendar icon-large"></i>
         <center>&nbsp;
             <b>
-                <?php echo "  $prvYear/$year Semester" ?> Supplementary Examinations Time table
+                <?php echo "  $sem Semester" ?> Selected courses Time table
             </b>
-
-
-
         </center>
     </div>
     <br>

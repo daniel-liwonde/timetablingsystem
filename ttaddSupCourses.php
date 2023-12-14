@@ -3,10 +3,9 @@ include('session.php');
 include('header.php');
 require_once('functions.php');
 require_once('ttFunctions.php');
-$year = date('Y');
-$sem = checksem();
+$sem = showCurrentSem($conn);
 if (isset($_GET['action']) == "delete") {
-    $del = mysqli_query($conn, "TRUNCATE TABLE suppcourses") or die(mysqli_error($conn));
+    $del = mysqli_query($conn, "DELETE FROM suppcourses WHERE sem='$sem'") or die(mysqli_error($conn));
 }
 ?>
 
@@ -26,7 +25,8 @@ if (isset($_GET['action']) == "delete") {
                         <div class="hero-unit-3" style="margin-top:15px;min-height:900px; width:103%">
                             <div class="alert alert-info">
                                 <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                <strong><i class="fas fa-redo fa-lg"></i>&nbsp;Supplimentary Tiemtable</strong>
+                                <strong><i class="fas fa-list-check"></i>&nbsp;Create timetable for selected
+                                    courses</strong>
                             </div>
                             <!-- start nested hero unit-3 -->
                             <div class="hero-unit-3 container" style="margin-top:10px; width:50%;float:left;">
@@ -57,7 +57,8 @@ if (isset($_GET['action']) == "delete") {
                                         
                                         while ($rows = mysqli_fetch_assoc($find)) {
                                             $course_id = $rows['subject_id'];
-                                            ?>
+                                            $studs = $rows['students']
+                                                ?>
                                             <tr>
                                                 <td>
                                                     <?php echo $rows['subject_code'] ?>
@@ -68,7 +69,7 @@ if (isset($_GET['action']) == "delete") {
                                                 <td>
                                                     <a class="btn btn-info" href="#" onclick='$("#msg").html("Please wait..."),$.getJSON("do.php",
                                                     {
-course_id:<?php echo $course_id ?> } ,
+course_id:<?php echo $course_id ?>} ,
 function(data){
     $("#msg").css("display", "block");
 $("#msg").html(data.res); 
@@ -92,7 +93,7 @@ setTimeout(function () {
                             <!-- end nested hero-3 -->
                             <!-- start nested hero unit-3-second -->
                             <div class="hero-unit-3"
-                                style="margin-top:10px; width:43%;float:left;position:relative; margin-left:1%; max-height:870px;overflow-y:scroll">
+                                style="margin-top:10px; width:43%;float:left;position:relative; margin-left:1%; max-height:660px;overflow-y:auto">
                                 <div class="alert alert-info">
                                     <button type="button" class="close" data-dismiss="alert">&times;</button>
                                     <strong><i class="fas fa-circle-plus"></i>&nbsp;Added Courses | <a
@@ -104,7 +105,7 @@ setTimeout(function () {
                                 <div id="msgd">
 
                                 </div>
-                                <table class="table table-stripped table-hover table-bordered" id="myTable">
+                                <table class="table table-stripped table-hover table-bordered examples" id="myTable">
 
                                 </table>
                             </div>

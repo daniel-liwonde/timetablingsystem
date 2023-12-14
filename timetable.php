@@ -52,31 +52,36 @@ $sem = checksem();
                                     class="fas fa-file-export mod"></i> &nbsp;Export to Exel File
                             </a>&nbsp; &nbsp;
 
-                            <a id="clearData" class="btn btn-outline rounded"
-                                onclick="return confirm('This action will clear all timetable preferences and  data. Do you want to continue?')"
-                                href="#"> <i class="fas fa-undo mod"></i> &nbsp;Reset data</a>&nbsp;&nbsp;
-                            <a class="btn btn-outline rounded" href="ttconfig.php"> <i class="fas fa-gear mod"></i>
+                            <a id="clearData" class="btn btn-outline rounded" href="#"> <i class="fas fa-undo mod"></i>
+                                &nbsp;Reset data</a>&nbsp;&nbsp;
+                            <a class="btn btn-outline rounded" href="ttconfig.php?menu=1"> <i
+                                    class="fas fa-gear mod"></i>
                                 &nbsp;settings</a>
                             <br>
+                            <div id="cs" style="margin-top:30px">
+
+                            </div>
                             <br>
-                            <div id="message" style="height:10px; position:fixed; display:none">
+                            <div id="message" style="height:10px; display:none">
                             </div>
 
                             <script>
                                 $(document).ready(function () {
                                     $("#clearData").click(function () {
-                                        $("#message").css("padding-bottom", "20px");
-                                        $("#message").css("display", "inline");
+                                        var conf = confirm("This action will clear your timetable data including preferences. Proceed?")
+                                        if (conf) {
+                                            $("#message").css("padding-bottom", "20px");
+                                            $("#message").css("display", "inline");
+                                            $("#message").html("<i class='fa-solid  fa-spinner fa-spin fa-lg mod'></i>&nbsp;Reseting data...");
+                                            $.getJSON("ttReset.php",
+                                                function (data) {
+                                                    $("#message").html(data.res);
+                                                    setTimeout(function () {
+                                                        $("#message").css("display", "none");
+                                                    }, 6000);
 
-                                        $("#message").html("<i class='fa-solid  fa-spinner fa-spin fa-lg mod'></i>&nbsp;Reseting data...");
-                                        $.getJSON("ttReset.php",
-                                            function (data) {
-                                                $("#message").html(data.res);
-                                                setTimeout(function () {
-                                                    $("#message").css("display", "none");
-                                                }, 6000);
-
-                                            });
+                                                });
+                                        }
                                     });
                                 });
                                 $(document).ready(function () {

@@ -7,6 +7,7 @@ require_once('ttFunctions.php');
 $year = date('Y');
 $sem = checksem();
 $msgP;
+$sem = showCurrentSem($conn);
 //cancelling a course manual schedule
 if (isset($_GET['delid'])) {
     $del = $_GET['delid'];
@@ -24,7 +25,7 @@ if (isset($_GET['subid'])) {
     $tslot = $_GET['slotid'];
     $day = $_GET['dayid'];
     $subname = $_GET['subject_title'];
-    $done = mysqli_query($conn, "DELETE FROM schedule WHERE timeslot=$tslot and roomid=$room and dayid=$day AND subject_id=$sub");
+    $done = mysqli_query($conn, "DELETE FROM schedule WHERE timeslot=$tslot and roomid=$room and dayid=$day AND subject_id=$sub AND sem='$sem'");
     if ($done) { //done
         if (mysqli_affected_rows($conn) > 0) {
             $msgP = "<div class='alert alert-warning'><i class='icon-check icon-large'></i> &nbsp; {$subname}  Removed from schedule successifully!</div>";
@@ -298,7 +299,9 @@ if (isset($_GET['id'])) {
                                             
                                             while ($rows = mysqli_fetch_assoc($find)) {
                                                 ?>
-                                                <option value="<?php echo $rows['subject_id'] ?>"><?php echo $rows['subject_title'] ?></option>
+                                                <option value="<?php echo $rows['subject_id'] ?>">
+                                                    <?php echo $rows['subject_title'] ?>
+                                                </option>
                                                 <?php
                                             }
                                             //}
@@ -319,7 +322,8 @@ if (isset($_GET['id'])) {
                                             
                                             while ($rows = mysqli_fetch_assoc($find)) {
                                                 ?>
-                                                <option value="<?php echo $rows['id'] ?>"><?php echo $rows['day'] ?>
+                                                <option value="<?php echo $rows['id'] ?>">
+                                                    <?php echo $rows['day'] ?>
                                                 </option>
                                                 <?php
                                             }
@@ -341,7 +345,8 @@ if (isset($_GET['id'])) {
                                             
                                             while ($rows = mysqli_fetch_assoc($find)) {
                                                 ?>
-                                                <option value="<?php echo $rows['id'] ?>"><?php echo $rows['room'] ?>
+                                                <option value="<?php echo $rows['id'] ?>">
+                                                    <?php echo $rows['room'] ?>
                                                 </option>
                                                 <?php
                                             }

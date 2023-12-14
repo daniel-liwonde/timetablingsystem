@@ -1,21 +1,20 @@
+<?php
+
+?>
 <!DOCTYPE html
     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<?php
-require_once('functions.php');
-require_once('ttFunctions.php');
-$sem = (checksem() == 1) ? "Jan-June" : "July-Dec";
-$year = date('Y');
-$prvYear = $year - 1;
-?>
-<html>
 
 <head>
     <title>Timetable</title>
     <?php
+    require_once('ttFunctions.php');
+    require_once('connect.php');
+    $sem = showCurrentSem($conn);
+
     header("Content-Type:application/msword");
     header("Expires: 0");
     header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-    header("content-disposition: attachment;filename={$sem}_{$year}_Teaching_Timetable.xlx");
+    header("content-disposition: attachment;filename=$sem Teaching_Timetable.xlx");
     ?>
 </head>
 
@@ -25,12 +24,13 @@ $prvYear = $year - 1;
     </h2>
     <div class="alert alert-info text-center"><i class="icon-calendar icon-large"></i>
         <center><b>&nbsp;
-                <?php echo "  $prvYear/$year Semester" ?>
+                <?php echo "  $sem  Semester" ?>
             </b> Master Teaching Time table
         </center>
     </div>
     <br><br>
     <?php
+
     displayTTExport($conn);
     ?>
 </body>
