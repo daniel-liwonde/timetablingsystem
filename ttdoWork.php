@@ -24,16 +24,14 @@ if (mysqli_num_rows($duproom) != 0) {
     if (checkRoomCompatibility($conn, $currentRoomID, $courseid) == 0) { //check if students can fit into the selected room
         echo json_encode(["res" => "<div class='alert alert-danger' style='text-align:left'> <i class='icon-remove-sign'></i> &nbsp; {$course} has a higher number of students than the capacity of the room selected</div>"]);
     } else { //proceed students can fit into the selected room
-        $checkroom = mysqli_query($conn, "SELECT allocatedcourse,sem FROM schedule WHERE dayid='$currentDayID' and timeslot='$slot' AND
+        $checkroom = mysqli_query($conn, "SELECT subject_id,allocatedcourse FROM schedule WHERE dayid='$currentDayID' and timeslot='$slot' AND
         roomid='$currentRoomID' AND sem='$sem'") or die(mysqli_error($conn));
-        if (mysqli_num_rows($checkroom) > 0) {
-            $c = mysqli_fetch_assoc($checkroom);
+        $c = mysqli_fetch_assoc($checkroom);
+        if ($c['allocatedcourse'] != null) { //check if slot is free
+            //$c = mysqli_fetch_assoc($checkroom);
             $cn = $c['allocatedcourse'];
-            if ($cn != "") {
-                echo json_encode(["res" => "<div class='alert alert-danger' style='text-align:left'> <i class='icon-remove-sign'></i> &nbsp;Clash will occourse allocating <font color='green'>{$course} </font>at the requested schedule because there is <font color='green'>$cn</font> alreadyat that schedule! please select a different room</div>"]);
-
-            }
-        } else { //no room clash
+            echo json_encode(["res" => "<div class='alert alert-danger' style='text-align:left'> <i class='icon-remove-sign'></i> &nbsp;Clash will occourse allocating <font color='green'>{$course} </font>at the requested schedule because there is <font color='green'>$cn</font> alreadyat that schedule! please select a different room</div>"]);
+        } else {
             $checks = mysqli_query($conn, "SELECT * FROM checker WHERE courseid='$courseid' and slots=2 AND sem='$sem'");
             if (mysqli_num_rows($checks) > 0) { // check sessions
 
@@ -58,7 +56,7 @@ if (mysqli_num_rows($duproom) != 0) {
                         $teacher_id,
                         $teacherf,
                         $teacherl,
-                        $sem,
+                        $sem
 
                     );
 
@@ -71,8 +69,9 @@ if (mysqli_num_rows($duproom) != 0) {
             } //end schedule the course
             //echo json_encode(array("ms" => "Ireached the server"));
         } //end room clash check
-    } //end check if students can fitt into the room
-} //end check room duplicate
+    } //end slot is free
+} //end check if students can fitt into the room
+//} //end check room duplicate
 
 //end set pref
 

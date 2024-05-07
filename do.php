@@ -82,4 +82,15 @@ if (isset($_GET['prog'])) {
         }
     }
 }
+if (isset($_GET["index"])) {
+    $index = $_GET["index"];
+    $subid = $_GET["course"];
+    if ($index == "exam") {
+        $sql = mysqli_query($conn, "SELECT exm FROM subject WHERE subject_id='$subid'") or die(mysqli_error($conn));
+        $row = mysqli_fetch_assoc($sql);
+        $status = $row['exm'];
+
+        echo json_encode(['st' => $status]);
+    }
+}
 ?>

@@ -11,9 +11,9 @@ if ($sem == 0) {
 		<i class='fas fa-check-circle'></i>&nbsp; Please set the current semester under settings</div>";
 } else {
 	$num = findMaxSchedule($conn);
-	$sql = "SELECT teacher.lastname, teacher.teacher_id, teacher.firstname, subject.subject_title,subject.sem, subject.prog,subject.subject_id
-        FROM teacher 
-        INNER JOIN subject ON teacher.teacher_id = subject.teacher_id WHERE subject.ext=0 AND subject.allocated!=2";
+	$sql = "SELECT * FROM subject
+         
+        INNER JOIN teacher ON subject.teacher_id=teacher.teacher_id  WHERE subject.ext=0 AND subject.allocated!=2";
 	$result = mysqli_query($conn, $sql);
 	$teacherCourses = array();
 

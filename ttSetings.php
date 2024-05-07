@@ -416,6 +416,7 @@ if (isset($_GET['exaset'])) {
                                     <strong><i class="icon-home icon-large"></i>&nbsp;Include or exclude courses from
                                         timetable</strong>
                                 </div>
+                                <div id="msg"></div>
                                 <table cellpadding="0" cellspacing="0" border="0"
                                     class="table table-striped table-bordered examples">
                                     <thead>
@@ -460,25 +461,90 @@ if (isset($_GET['exaset'])) {
                                                     <?php echo $rows['subject_title'] ?>
                                                 </td>
                                                 <td>
-                                                    <?php echo $tag ?>
-                                                    <span id="s1"></span>
+                                                   
+                                                    <span id="s1<?php echo $id ?>"><?php echo $tag ?></span>
                                                 </td>
                                                 <td>
-                                                    <?php echo $etag ?>
-                                                    <span id="s2"></span>
+                                                    
+                                                    <span id="s2<?php echo $id ?>"><?php echo $etag ?> </span>
                                                 </td>
                                               <td>
-    <a <?php if ($t == 0) { ?> class="btn btn-success" <?php $txt = "Exclude";
+    <a id="ex<?php echo $id ?>" <?php if ($t == 0) { ?> class="btn btn-success" <?php $txt = "Exclude";
                                                     } else { ?> class="btn btn-danger" <?php $txt = "Include";
-                                                    } ?> href="ttSetings.php?tecset=<?php echo $id ?>">
-                                                        <?php echo $txt ?>
+                                                    } ?>
+                                                    onclick='
+                                                    var x="teach";
+                                                       $.ajax({
+                                            url: "ttdoSet.php",
+                                            method: "GET",
+                                            data: {course:<?php echo $id ?>, 
+                                                index: x
+                                            },
+                                            success: function (response) {
+                                                // Handle the response here
+                                                
+                                                if(response == 1)
+                                                {
+                                                     $("#ex<?php echo $id ?>").removeAttr("class");
+                                                      $("#ex<?php echo $id ?>").attr("class","btn btn-danger");
+                                                        $("#s1<?php echo $id ?>").css("color","red");
+                                                    $("#s1<?php echo $id ?>").html("YES");
+                                                 $("#ex<?php echo $id ?>").html("Include");
+                                                }
+                                                 else
+                                                 {
+                                                     $("#ex<?php echo $id ?>").removeAttr("class");
+                                                      $("#ex<?php echo $id ?>").attr("class","btn btn-success");
+                                                      $("#s1<?php echo $id ?>").css("color","green");
+                                                     $("#s1<?php echo $id ?>").html("NO");
+                                                  $("#ex<?php echo $id ?>").html("Exclude");
+                                                 }
+                                            },
+                                            error: function (jqXHR, textStatus, errorThrown) {
+                                                $("#msg").html("Request failed: " + textStatus + ", " + errorThrown);
+                                            }
+                                        });'>
+                                         <?php echo $txt ?>
                                                     </a>
                                                 </td>
                                                 <td>
-                                                    <a <?php if ($e == 0) { ?> class="btn btn-success" <?php $etxt = "Exclude";
+                                                    <a id="et<?php echo $id ?>" <?php if ($e == 0) { ?> class="btn btn-success" <?php $etxt = "Exclude";
                                                     } else { ?> class="btn btn-danger" <?php $etxt = "Include";
-                                                    } ?> href="ttSetings.php?exaset=<?php echo $id ?>">
-                                                        <?php echo $etxt ?>
+                                                    } ?> 
+                                                    onclick='
+                                                    var x="exam";
+                                                       $.ajax({
+                                            url: "ttdoSet.php",
+                                            method: "GET",
+                                            data: {course:<?php  echo $id ?>, 
+                                                index: x
+                                            },
+                                            success: function (response) {
+                                                // Handle the response here
+                                                
+                                                if(response == 1)
+                                                {
+                                                     $("#et<?php echo $id ?>").removeAttr("class");
+                                                      $("#et<?php echo $id ?>").attr("class","btn btn-danger");
+                                                        $("#s2<?php echo $id ?>").css("color","red");
+                                                    $("#s2<?php echo $id ?>").html("YES");
+                                                 $("#et<?php echo $id ?>").html("Include");
+                                                }
+                                                 else
+                                                 {
+                                                     $("#et<?php echo $id ?>").removeAttr("class");
+                                                      $("#et<?php echo $id ?>").attr("class","btn btn-success");
+                                                      $("#s2<?php echo $id ?>").css("color","green");
+                                                     $("#s2<?php echo $id ?>").html("NO");
+                                                  $("#et<?php echo $id ?>").html("Exclude");
+                                                 }
+                                            },
+                                            error: function (jqXHR, textStatus, errorThrown) {
+                                                $("#msg").html("Request failed: " + textStatus + ", " + errorThrown);
+                                            }
+                                        });'>
+                                                    <?php echo $etxt ?>
+                                                        
                                                     </a>
                                                 </td>
                                                 </tr>

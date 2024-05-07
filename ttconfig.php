@@ -8,25 +8,16 @@ $sem = showCurrentSem($conn);
 if ($sem != 0) {
     if (isset($_GET['subid'])) {
         $sub = $_GET['subid'];
-        $room = $_GET['roomid'];
-        $tslot = $_GET['slotid'];
-        $day = $_GET['dayid'];
+
         $subname = $_GET['subject_title'];
-        $done = mysqli_query($conn, "DELETE FROM schedule WHERE timeslot=$tslot and roomid=$room and dayid=$day AND subject_id=$sub AND sem='$sem'");
+        $s = mysqli_query($conn, "SELECT * FROM subject WHERE subject_title='$subname'");
+        $subs = mysqli_fetch_assoc($s);
+        $subid = $subs["subject_id"];
+        $done = mysqli_query($conn, "DELETE FROM schedule WHERE scheduleid=$sub AND sem='$sem'");
+        mysqli_query($conn, "UPDATE checker SET slots=slots-1 WHERE courseid='$subid' AND sem='$sem' ");
         if ($done) { //done
             if (mysqli_affected_rows($conn) > 0) {
-                $msgP = "<div class='alert alert-warning'><i class='icon-check icon-large'></i> &nbsp; {$subname}  Removed from schedule successifully!</div>";
-
-                $getsub = mysqli_query($conn, "SELECT * FROM subject WHERE subject_id='$sub'");
-                $Sessions = mysqli_fetch_assoc($getsub);
-
-                if ($Sessions['allocated'] == 2) {
-                    mysqli_query($conn, "UPDATE subject SET allocated=1 WHERE subject_id='$sub' AND sem='$sem'");
-                    mysqli_query($conn, "UPDATE checker SET slots=1 WHERE courseid='$sub' AND sem='$sem'");
-                } else {
-                    mysqli_query($conn, "UPDATE subject SET allocated=0 WHERE subject_id='$sub' AND sem='$sem'");
-                    mysqli_query($conn, "DELETE FROM checker  WHERE courseid='$sub' AND sem='$sem'");
-                }
+                $msgP = "<div class='alert alert-success'><i class='fas fa-circle-check'></i> &nbsp; {$subname}  Removed from schedule successifully!</div>";
             }
         } //close done
     }
@@ -219,7 +210,7 @@ if ($sem != 0) {
                                     class="table table-striped table-bordered" id="example">
                                     <thead>
                                         <tr>
-                                            <th>Code</th>
+
                                             <th>Course Name</th>
                                             <th>Slot</th>
                                             <th>Day </th>
@@ -230,80 +221,76 @@ if ($sem != 0) {
                                     </thead>
                                     <tbody>
                                         <?php
-                                        $find = mysqli_query($conn, "SELECT * FROM subject WHERE allocated != 0");
-                                        while ($row = mysqli_fetch_assoc($find)) {
-                                            $subid = $row['subject_id'];
-                                            $subname = $row['subject_title'];
-                                            $find2 = mysqli_query($conn, "SELECT * FROM schedule WHERE subject_id='$subid' and sem='$sem'");
-                                            mysqli_data_seek($find2, 0);
-                                            while ($rows = mysqli_fetch_assoc($find2)) {
-                                                $roomid = $rtag = $rows['roomid'];
-                                                $slotid = $stag = $rows['timeslot'];
-                                                $dayid = $dtag = $rows['dayid'];
-                                                $rtag = ($rtag == 0) ? "NOT SET" : $rows['roomid'];
-                                                $stag = ($stag == 10 || $stag == 0) ? "NOT SET" : $rows['timeslot'];
-                                                $dtag = ($dtag == 0) ? "NOT SET" : $rows['dayid'];
-                                                if ($dtag != 0) {
-                                                    $fiday = mysqli_query($conn, "SELECT * FROM week_days  WHERE id='$dtag' ");
-                                                    $day = mysqli_fetch_assoc($fiday);
-                                                    $dtag = $day['day'];
-                                                }
-                                                if ($rtag != 0) {
-                                                    $findroom = mysqli_query($conn, "SELECT room FROM rooms WHERE id='$rtag' ");
-                                                    $r = mysqli_fetch_assoc($findroom);
-                                                    $rtag = $r['room'];
-                                                }
+                                        $find2 = mysqli_query($conn, "SELECT * FROM schedule WHERE pref=1 and sem='$sem'");
+                                        while ($rows = mysqli_fetch_assoc($find2)) {
+                                            $roomid = $rtag = $rows['roomid'];
+                                            $slotid = $stag = $rows['timeslot'];
+                                            $dayid = $dtag = $rows['dayid'];
+                                            $subname = $rows['allocatedcourse'];
+                                            $sid = $dtag = $rows['scheduleid'];
 
-
-                                                switch ($stag) {
-                                                    case 0:
-                                                        $stag = "8:00-9:30";
-                                                        break;
-                                                    case 1:
-                                                        $stag = "9:30-11:00";
-                                                        break;
-                                                    case 2:
-                                                        $stag = "11:00-12:30";
-                                                        break;
-                                                    case 3:
-                                                        $stag = "12:30-2:00";
-                                                        break;
-                                                    case 4:
-                                                        $stag = "2:00-3:30";
-                                                        break;
-                                                    case 5:
-                                                        $stag = "8:00-9:30";
-                                                        break;
-
-                                                }
-
-                                                ?>
-                                                <tr>
-                                                    <td>
-                                                        <?php echo $row['subject_code'] ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php echo $row['subject_title'] ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php echo $stag ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php echo $dtag ?>
-
-                                                    </td>
-                                                    <td>
-                                                        <?php echo $rtag ?>
-                                                    </td>
-                                                    <td><a onclick="return confirm('Are you sure you want to remove this schedule?')"
-                                                            tootip="Remove" class="btn btn-danger"
-                                                            href="ttconfig.php?subid=<?php echo $subid ?>&dayid=<?php echo $dayid ?>&slotid=<?php echo $slotid ?>&roomid=<?php echo $roomid ?>&subject_title=<?php echo $subname ?>">
-                                                            <i class="icon icon-remove icon-large"></i></a>
-                                                    </td>
-                                                </tr>
-                                                <?php
+                                            $rtag = ($rtag == 0) ? "NOT SET" : $rows['roomid'];
+                                            $stag = ($stag == 10 || $stag == 0) ? "NOT SET" : $rows['timeslot'];
+                                            $dtag = ($dtag == 0) ? "NOT SET" : $rows['dayid'];
+                                            if ($dtag != 0) {
+                                                $fiday = mysqli_query($conn, "SELECT * FROM week_days  WHERE id='$dtag' ");
+                                                $day = mysqli_fetch_assoc($fiday);
+                                                $dtag = $day['day'];
                                             }
+                                            if ($rtag != 0) {
+                                                $findroom = mysqli_query($conn, "SELECT room FROM rooms WHERE id='$rtag' ");
+                                                $r = mysqli_fetch_assoc($findroom);
+                                                $rtag = $r['room'];
+                                            }
+
+
+                                            switch ($stag) {
+                                                case 0:
+                                                    $stag = "8:00-9:30";
+                                                    break;
+                                                case 1:
+                                                    $stag = "9:30-11:00";
+                                                    break;
+                                                case 2:
+                                                    $stag = "11:00-12:30";
+                                                    break;
+                                                case 3:
+                                                    $stag = "12:30-2:00";
+                                                    break;
+                                                case 4:
+                                                    $stag = "2:00-3:30";
+                                                    break;
+                                                case 5:
+                                                    $stag = "8:00-9:30";
+                                                    break;
+
+                                            }
+
+                                            ?>
+                                            <tr>
+
+                                                <td>
+                                                    <?php echo $rows['allocatedcourse'] ?>
+                                                </td>
+                                                <td>
+                                                    <?php echo $stag ?>
+                                                </td>
+                                                <td>
+                                                    <?php echo $dtag ?>
+
+                                                </td>
+                                                <td>
+                                                    <?php echo $rtag ?>
+                                                </td>
+                                                <td><a onclick="return confirm('Are you sure you want to remove this schedule?')"
+                                                        tootip="Remove" class="btn btn-danger" href="ttconfig.php?subid=<?php echo $sid ?>&subject_title=<?php echo $subname ?>
+                                                        &menu=1">
+                                                        <i class="icon icon-remove icon-large"></i></a>
+                                                </td>
+                                            </tr>
+                                            <?php
                                         }
+
                                         ?>
                                     </tbody>
                                 </table>

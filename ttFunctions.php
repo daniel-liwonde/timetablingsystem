@@ -225,17 +225,16 @@ function doSchedule(
 
 ) {
     $num = findMaxSchedule($conn);
-
     $check = mysqli_query($conn, "SELECT * FROM checker WHERE courseid='$courseid'");
     if (mysqli_num_rows($check) == 0) { // picked course is not scheduled give it the first slot
         $num = $num + 1;
         mysqli_query($conn, "INSERT INTO schedule(scheduleid,dayid,roomid,timeslot,allocatedcourse,
-lectid,lecturerfname,lecturerlname,subject_id,sem)
-values('$num','$currentDayID','$currentRoomID',$slot,'$course','$teacher_id','$teacherf','$teacherl','$courseid','$sem')") or
+lectid,lecturerfname,lecturerlname,subject_id,sem,pref)
+values('$num','$currentDayID','$currentRoomID',$slot,'$course','$teacher_id','$teacherf','$teacherl','$courseid','$sem',1)") or
             die(mysqli_error($conn));
         mysqli_query($conn, "INSERT INTO checker(courseid,slots,sem)
 values('$courseid',1,'$sem')") or die(mysqli_error($conn));
-        mysqli_query($conn, "UPDATE subject SET allocated=allocated+1 WHERE subject_id='$courseid' and sem='$sem' ");
+
         //add the course to added course array
     } // end course not scheduled
     else { //course already scheduled atleast once
@@ -245,20 +244,20 @@ values('$courseid',1,'$sem')") or die(mysqli_error($conn));
             $check2 = mysqli_query($conn, "SELECT * FROM schedule WHERE dayid='$currentDayID' and timeslot='$slot' AND
         roomid='$currentRoomID' AND sem='$sem'") or die(mysqli_error($conn));
             if (mysqli_num_rows($check2) > 0) { //picked slot already available
-                mysqli_query($conn, "UPDATE schedule  SET allocatedcourse='$course', lectid='$teacher_id',lecturerfname='$teacherf',lecturerlname='$teacherl' WHERE dayid='$currentDayID' and timeslot='$slot' AND
+                mysqli_query($conn, "UPDATE schedule  SET allocatedcourse='$course',pref=1,  lectid='$teacher_id',lecturerfname='$teacherf',lecturerlname='$teacherl' WHERE dayid='$currentDayID' and timeslot='$slot' AND
         roomid='$currentRoomID' and sem='$sem'") or
                     die(mysqli_error($conn));
                 mysqli_query($conn, "UPDATE checker SET slots=slots+1 WHERE courseid='$courseid'AND sem='$sem' ");
-                mysqli_query($conn, "UPDATE subject SET allocated=allocated+1,sem='$sem' WHERE subject_id='$courseid' ");
+
             } else {
                 //give the course a second slot and update checker
                 $num = $num + 1;
                 mysqli_query($conn, "INSERT INTO
-schedule(scheduleid,dayid,roomid,timeslot,allocatedcourse,lectid,lecturerfname,lecturerlname,subject_id,sem)
-values('$num','$currentDayID','$currentRoomID',$slot,'$course','$teacher_id','$teacherf','$teacherl','$courseid','$sem')") or
+schedule(scheduleid,subject_id,dayid,roomid,timeslot,allocatedcourse,lectid,lecturerfname,lecturerlname,sem,pref)
+values('$num','$courseid','$currentDayID','$currentRoomID',$slot,'$course','$teacher_id','$teacherf','$teacherl','$courseid','$sem',1)") or
                     die(mysqli_error($conn));
                 mysqli_query($conn, "UPDATE checker SET slots=slots+1  WHERE courseid='$courseid' AND sem='$sem' ");
-                mysqli_query($conn, "UPDATE subject SET allocated=allocated+1 WHERE subject_id='$courseid' ");
+
             }
         } //end give it second slot
     } //end course already scheduled atleast once
@@ -611,8 +610,8 @@ function displayTTExport($conn)
     } else {
         ?>
         <script type="text/JavaScript">
-                                                                                                                                                                                                                                                                                                                                                                            alert("No timetable for this semester");
-                                                                                                                                                                                                                                                                                                                                                                            </script>
+                                                                                                                                                                                                                                                                                                                                                                                                                            alert("No timetable for this semester");
+                                                                                                                                                                                                                                                                                                                                                                                                                            </script>
         <?php
     }
 }
